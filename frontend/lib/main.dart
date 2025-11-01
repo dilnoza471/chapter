@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/catalog_page.dart';
+import 'package:frontend/theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,10 +14,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const CatalogPage()
+      theme: AppTheme.lightTheme,      //  Use our custom light theme
+      darkTheme: AppTheme.darkTheme,   //  Use our custom dark theme
+      themeMode: ThemeMode.system,     //  Automatically switch by system
+      home: const CatalogPage(),
     );
   }
 }
