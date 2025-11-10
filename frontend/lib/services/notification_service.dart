@@ -3,7 +3,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService{
   static final NotificationService _instance=NotificationService._internal();
-  factory NotificationService()=> _instance();
+  factory NotificationService()=> _instance;
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _notifications=FlutterLocalNotificationsPlugin();
