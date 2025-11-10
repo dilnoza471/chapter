@@ -91,7 +91,7 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen>{
               ),
             ),
           IconButton(
-            icon: Icon(Icons.bookmark),
+            icon: Icon(Icons.pending_actions),
             onPressed: (){
               Navigator.push(
                 context,
