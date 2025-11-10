@@ -39,11 +39,11 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen>{
       }
     }
   }
-  void _showSnackBar(String message){
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
+  // void _showSnackBar(String message){
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(content: Text(message)),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context){
