@@ -125,7 +125,7 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                         Icon(
-                            Icons.bookmark_border,
+                            Icons.pending_actions_rounded,
                             size: 80,
                             color: Colors.grey[400],
                         ),
