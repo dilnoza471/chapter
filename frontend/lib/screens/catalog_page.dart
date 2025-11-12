@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 import 'book_details_page.dart';
 import '../models/book_model.dart';
 import '../widgets/book_widget.dart';
+import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
+
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
 
@@ -12,16 +15,28 @@ class CatalogPage extends StatefulWidget {
   State<CatalogPage> createState() => _CatalogPageState();
 }
 
-class _CatalogPageState extends State<CatalogPage> {
+class _CatalogPageState extends State<CatalogPage>
+    with SingleTickerProviderStateMixin {
   List<BookModel> books = [];
   bool isLoading = true;
   String? errorMessage;
-  final String baseUrl = 'http://localhost:5000'; // Replace with your actual base URL
+  final String baseUrl = 'http://localhost:5000';
+  late AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
     fetchBooks();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> fetchBooks() async {
@@ -32,16 +47,16 @@ class _CatalogPageState extends State<CatalogPage> {
 
     try {
       final response = await http.get(Uri.parse('$baseUrl/books'));
-
       if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
+        final List data = json.decode(response.body);
         setState(() {
-          books = jsonData.map((json) => BookModel.fromJson(json)).toList();
+          books = data.map((json) => BookModel.fromJson(json)).toList();
           isLoading = false;
         });
+        _animationController.forward();
       } else {
         setState(() {
-          errorMessage = 'Failed to load books: ${response.statusCode}';
+          errorMessage = 'Failed to load books (${response.statusCode})';
           isLoading = false;
         });
       }
@@ -55,63 +70,39 @@ class _CatalogPageState extends State<CatalogPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = themeNotifier.value == ThemeMode.dark;
+    final theme = isDark ? AppTheme.darkTheme : AppTheme.lightTheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
-          // Glassy App Bar
           SliverAppBar(
-            expandedHeight: 120,
             floating: true,
             pinned: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            flexibleSpace: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withValues(alpha: .8),
-                        Colors.white.withValues(alpha: .6),
-                      ],
-                    ),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.white.withValues(alpha: .3),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  child: FlexibleSpaceBar(
-                    centerTitle: false,
-                    titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-                    title: const Text(
-                      'Library Catalog',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 28,
-                      ),
-                    ),
-                  ),
+            expandedHeight: 120,
+            backgroundColor: theme.primaryColor,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 16, bottom: 12),
+              title: Text(
+                'Library Catalog',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.blueGrey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
                 ),
               ),
             ),
           ),
 
-          // Search Bar Placeholder
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _buildGlassySearchPlaceholder(),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
+              child: _buildSearchBar(theme),
             ),
           ),
 
-          // Books Grid or Loading/Error State
           if (isLoading)
             const SliverFillRemaining(
               child: Center(child: CircularProgressIndicator()),
@@ -119,72 +110,54 @@ class _CatalogPageState extends State<CatalogPage> {
           else if (errorMessage != null)
             SliverFillRemaining(
               child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      errorMessage!,
-                      style: TextStyle(color: Colors.grey[600]),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: fetchBooks,
-                      child: const Text('Retry'),
-                    ),
-                  ],
+                child: Text(
+                  errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 16),
                 ),
               ),
             )
           else if (books.isEmpty)
-            SliverFillRemaining(
+            const SliverFillRemaining(
               child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.book_outlined, size: 64, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No books available',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'No books found.',
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
                 ),
               ),
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.65,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: MediaQuery.of(context).size.width >= 800
+                      ? 200 // fixed width for wide screens
+                      : 160, // smaller width for narrower screens
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 3 / 5.4, // keeps your book item shape
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return BookWidget(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  return FadeTransition(
+                    opacity: _animationController.drive(
+                      CurveTween(
+                        curve: Interval((index * 0.1).clamp(0.0, 1.0), 1.0),
+                      ),
+                    ),
+                    child: BookWidget(
                       book: books[index],
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BookDetailsPage(
-                              book: books[index],
-                            ),
+                            builder: (_) => BookDetailsPage(book: books[index]),
                           ),
                         );
                       },
-                    );
-                  },
-                  childCount: books.length,
-                ),
+                    ),
+                  );
+                }, childCount: books.length),
               ),
             ),
         ],
@@ -192,43 +165,37 @@ class _CatalogPageState extends State<CatalogPage> {
     );
   }
 
-  Widget _buildGlassySearchPlaceholder() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          height: 56,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.7),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
-              width: 1,
+  //implement the searchbar here
+  Widget _buildSearchBar(ThemeData theme) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: theme.cardColor.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 12),
+          const Icon(Icons.search_rounded, color: Colors.grey),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              'Search books, authors...',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
-          child: Row(
-            children: [
-              const SizedBox(width: 16),
-              Icon(Icons.search, color: Colors.grey[600]),
-              const SizedBox(width: 12),
-              Text(
-                'Search books...',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 16,
-                ),
-              ),
-            ],
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.grey),
+            onPressed: fetchBooks,
           ),
-        ),
+        ],
       ),
     );
   }
