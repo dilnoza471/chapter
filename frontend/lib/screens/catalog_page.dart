@@ -6,7 +6,6 @@ import 'book_details_page.dart';
 import '../models/book_model.dart';
 import '../widgets/book_widget.dart';
 import '../theme/app_theme.dart';
-import '../theme/theme_controller.dart';
 
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
@@ -70,8 +69,9 @@ class _CatalogPageState extends State<CatalogPage>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = themeNotifier.value == ThemeMode.dark;
-    final theme = isDark ? AppTheme.darkTheme : AppTheme.lightTheme;
+    // Use the currently applied Theme from the BuildContext
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,

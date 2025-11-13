@@ -4,7 +4,11 @@ import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/theme/theme_controller.dart';
 import 'package:frontend/screens/my_borrowings_screen.dart';
 
-void main() {
+final ThemeController themeController = ThemeController();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await themeController.load(); // ensure prefs loaded before runApp
   runApp(MyApp());
 }
 
@@ -27,14 +31,13 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: themeNotifier,
-      builder: (_, mode, __) {
+    return AnimatedBuilder(
+      animation: themeController,
+      builder: (context, _) {
         return MaterialApp(
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: mode,
-
+          themeMode: themeController.mode,
           home: Scaffold(
             body: _pages[_selectedIndex],
             bottomNavigationBar: BottomNavigationBar(
