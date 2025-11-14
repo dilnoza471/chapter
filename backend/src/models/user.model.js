@@ -24,10 +24,14 @@ const User = sequelize.define('User', {
         allowNull: false,
     },
     role: {
-        // Defines the allowed values for the role column
         type: DataTypes.ENUM('student', 'librarian'), 
         allowNull: false,
         defaultValue: 'student',
+    },
+    student_id: {
+        type: DataTypes.STRING,
+        allowNull: true, 
+        unique: true,
     },
     borrowed_books_count: {
         type: DataTypes.INTEGER,
