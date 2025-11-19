@@ -44,6 +44,7 @@ export async function register(req, res) {
     }
 }
 
+
 export async function login(req, res) {
     const { identifier, password } = req.body;
 
@@ -82,4 +83,14 @@ export async function login(req, res) {
         console.error(error);
         res.status(500).json({ message: 'Server error during login.' });
     }
+
+    
+}
+
+export async function logout(req, res) {
+    // For JWT-based auth, logging out is typically client-side 
+    // (clearing the token). The server only needs to confirm the request
+    // or optionally blacklist a token if using refresh tokens.
+    // Here we just send a success response.
+    res.status(200).json({ message: 'Logout successful (client-side token removal)' });
 }

@@ -29,6 +29,7 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 
+
 // Global Error Handler
 app.use((error, req, res, next) => {
     console.error(error.stack); 
