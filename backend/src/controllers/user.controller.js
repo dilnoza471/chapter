@@ -5,7 +5,6 @@ import * as authService from '../services/auth.service.js';
 import { Op } from 'sequelize'; 
 
 export async function getUserProfile(req, res) { 
-    // ... (Your getUserProfile logic goes here) ...
     const requestedId = parseInt(req.params.id); 
     const { id: currentUserId, role: currentUserRole } = req.user; 
 
@@ -31,11 +30,9 @@ export async function getUserProfile(req, res) {
 }
 
 export async function updateProfile(req, res) {
-    // ... (Your updateProfile logic goes here) ...
     const userId = req.user.id; 
     const { name, email } = req.body;
 
-    // ... (rest of logic using User.update) ...
     if (!name && !email) {
         return res.status(400).json({ message: 'No fields provided for update.' });
     }
