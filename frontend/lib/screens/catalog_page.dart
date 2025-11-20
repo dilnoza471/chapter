@@ -5,10 +5,13 @@ import 'dart:convert';
 import 'book_details_page.dart';
 import '../models/book_model.dart';
 import '../widgets/book_widget.dart';
-import '../theme/app_theme.dart';
 
 class CatalogPage extends StatefulWidget {
-  const CatalogPage({super.key});
+  // NEW: Add userRole and onLogout as required parameters
+  final String userRole;
+  final VoidCallback onLogout;
+  
+  const CatalogPage({super.key, required this.userRole, required this.onLogout});
 
   @override
   State<CatalogPage> createState() => _CatalogPageState();
@@ -19,7 +22,8 @@ class _CatalogPageState extends State<CatalogPage>
   List<BookModel> books = [];
   bool isLoading = true;
   String? errorMessage;
-  final String baseUrl = 'http://localhost:5000';
+  // IMPORTANT: Use 10.0.2.2 for Android emulator to reach localhost
+  final baseUrl = "http://127.0.0.1:5001"; 
   late AnimationController _animationController;
 
   @override
@@ -83,12 +87,21 @@ class _CatalogPageState extends State<CatalogPage>
             pinned: true,
             expandedHeight: 120,
             backgroundColor: theme.primaryColor,
+            actions: [
+              // NEW: Logout Button
+              IconButton(
+                icon: const Icon(Icons.logout, color: Colors.white),
+                onPressed: widget.onLogout,
+                tooltip: 'Logout (${widget.userRole})',
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.only(left: 16, bottom: 12),
               title: Text(
                 'Library Catalog',
                 style: TextStyle(
-                  color: isDark ? Colors.white : Colors.blueGrey,
+                  // Adjust color for visibility against primaryColor
+                  color: isDark ? Colors.white : Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
                 ),
@@ -132,11 +145,11 @@ class _CatalogPageState extends State<CatalogPage>
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: MediaQuery.of(context).size.width >= 800
-                      ? 200 // fixed width for wide screens
-                      : 160, // smaller width for narrower screens
+                      ? 200 
+                      : 160, 
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 3 / 5.4, // keeps your book item shape
+                  childAspectRatio: 3 / 5.4, 
                 ),
                 delegate: SliverChildBuilderDelegate((context, index) {
                   return FadeTransition(
@@ -186,9 +199,11 @@ class _CatalogPageState extends State<CatalogPage>
           const Icon(Icons.search_rounded, color: Colors.grey),
           const SizedBox(width: 8),
           const Expanded(
-            child: Text(
-              'Search books, authors...',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+            child: TextField( // Changed from Text to TextField for search
+              decoration: InputDecoration.collapsed(
+                hintText: 'Search books, authors...',
+                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
             ),
           ),
           IconButton(
