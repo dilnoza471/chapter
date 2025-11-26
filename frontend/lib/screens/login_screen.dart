@@ -13,7 +13,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
 
-  String _email = '';
+  // **MODIFIED:** Renamed from _email to _identifier to match backend
+  String _identifier = ''; 
   String _password = '';
   bool _isLoading = false;
   String? _errorMessage;
@@ -26,7 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        await _authService.login(_email, _password);
+        // **MODIFIED:** Pass _identifier instead of _email
+        await _authService.login(_identifier, _password); 
         final role = await _authService.getRole();
         widget.onLoginSuccess(role);
       } catch (e) {
@@ -83,10 +85,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 30),
 
+                    // **MODIFIED:** Update label and onChanged to use _identifier
                     TextFormField(
-                      decoration: _input("Email"),
-                      validator: (v) => v!.isEmpty ? "Enter email" : null,
-                      onChanged: (v) => _email = v,
+                      // **MODIFIED:** Changed label to reflect that it accepts both
+                      decoration: _input("Email or Student ID"),
+                      // **MODIFIED:** Updated validator message
+                      validator: (v) => v!.isEmpty ? "Enter your email or student ID" : null,
+                      onChanged: (v) => _identifier = v, // Assign to _identifier
                     ),
                     const SizedBox(height: 20),
 
