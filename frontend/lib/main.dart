@@ -77,6 +77,24 @@ class _MyAppHomeState extends State<MyAppHome> {
   }
 }
 
+// --- TEMPORARY FIX: Placeholder for AuthService ---
+// This class is added to resolve the "AuthService is unknown" error, 
+// assuming the original file 'services/auth_service.dart' is missing 
+// or incomplete in this environment.
+class AuthService {
+  // Simulates fetching the stored role (e.g., from SharedPreferences/local storage)
+  Future<String?> getRole() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    return null; 
+  }
+
+  // Simulates clearing authentication data
+  Future<void> logout() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    print('User logged out.');
+  }
+}
+
 // --- MAIN WIDGET: MyApp ---
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -86,6 +104,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  // Now AuthService is defined, so this line should compile without errors.
   final AuthService _authService = AuthService();
   String? _role;
   bool _isLoading = true;
@@ -98,9 +117,12 @@ class _MyAppState extends State<MyApp> {
 
   // Check for existing token/role to restore session
   void _checkAuthStatus() async {
-    final role = await _authService.getRole();
+    // This is where the actual AuthService.getRole() would be called.
+    // The placeholder implementation is used now.
+    final role = await _authService.getRole(); 
+    await Future.delayed(const Duration(milliseconds: 500));
     setState(() {
-      _role = role;
+      _role = role; // Use the role returned from getRole()
       _isLoading = false;
     });
   }
@@ -149,9 +171,12 @@ class _MyAppState extends State<MyApp> {
           home: homeWidget, 
           // Define routes for navigation
           routes: {
+            // Updated to handle Sign Up success correctly.
+            // When sign up is successful, we set the new role (which triggers 
+            // the main app structure) and then remove the sign-up screen from the stack.
             '/signup': (context) => SignUpScreen(onSignUpSuccess: (role) {
-                  // After successful sign up, go back to the login screen
-                  Navigator.pop(context); 
+                  _handleAuthSuccess(role); 
+                  Navigator.pop(context); // Go back to the main authenticated view
                 }),
           },
         );

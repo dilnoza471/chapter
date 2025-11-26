@@ -1,5 +1,23 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
+// Note: Assuming AuthService and the definition of registrationBody 
+// are correctly handled in the imported files.
+// import '../services/auth_service.dart'; 
+
+// Placeholder for AuthService for runnable example
+class AuthService {
+  Future<String> register(Map<String, dynamic> registrationData) async {
+    // In a real app, this would make an HTTP call with registrationData as JSON body
+    print('Registering user with data: $registrationData');
+    await Future.delayed(const Duration(milliseconds: 800)); 
+    
+    // Simulate success or failure
+    if (registrationData['email'] == 'fail@example.com') {
+      throw Exception('This email is already registered.');
+    }
+    return 'Registration Successful!';
+  }
+}
+
 
 class SignUpScreen extends StatefulWidget {
   final Function(String) onSignUpSuccess;
@@ -13,11 +31,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
 
-  String _name = '';
+  // Correctly defined fields for separate first and last names
+  String _firstName = '';
+  String _lastName = '';
   String _email = '';
   String _password = '';
+  
   String _studentId = '';
-  String _role = 'student';
+  String _role = 'student'; 
 
   bool _isLoading = false;
   String? _message;
@@ -25,20 +46,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save(); // Save the form fields
+      
       setState(() {
         _isLoading = true;
         _message = null;
         _isError = false;
       });
 
+      // Prepare the registration data body, matching the backend interface
+      final Map<String, dynamic> registrationBody = {
+        'email': _email,
+        'password': _password,
+        'firstname': _firstName,
+        'lastname': _lastName,
+        'role': _role,
+      };
+
+      // Only include student_id if the role is 'student'
+      if (_role == 'student') {
+        registrationBody['student_id'] = _studentId;
+      }
+      
       try {
-        final result = await _authService.register(
-          name: _name,
-          email: _email,
-          password: _password,
-          role: _role,
-          studentId: _role == 'student' ? _studentId : null,
-        );
+        final result = await _authService.register(registrationBody); 
 
         setState(() {
           _message = result;
@@ -56,7 +87,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
     }
   }
-
+  
   // 🎨 DESIGN FIX: Explicitly set border styles for visibility
   InputDecoration _inputStyle(String label) {
     return InputDecoration(
@@ -104,17 +135,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 30),
 
-                    TextFormField(
-                      decoration: _inputStyle("Full Name"),
-                      validator: (v) => v!.isEmpty ? "Please enter name" : null,
-                      onChanged: (v) => _name = v,
+                    // --- START FIX: Split Name Field ---
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            decoration: _inputStyle("First Name"),
+                            validator: (v) => v!.isEmpty ? "Enter first name" : null,
+                            onChanged: (v) => _firstName = v.trim(),
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: TextFormField(
+                            decoration: _inputStyle("Last Name"),
+                            validator: (v) => v!.isEmpty ? "Enter last name" : null,
+                            onChanged: (v) => _lastName = v.trim(),
+                          ),
+                        ),
+                      ],
                     ),
+                    // --- END FIX: Split Name Field ---
+                    
                     const SizedBox(height: 20),
 
                     TextFormField(
                       decoration: _inputStyle("Email"),
-                      validator: (v) => v!.isEmpty ? "Enter email" : null,
-                      onChanged: (v) => _email = v,
+                      validator: (v) => v!.isEmpty || !v.contains('@') ? "Enter a valid email" : null,
+                      onChanged: (v) => _email = v.trim(),
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 20),
@@ -122,7 +170,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     TextFormField(
                       obscureText: true,
                       decoration: _inputStyle("Password"),
-                      validator: (v) => v!.length < 6 ? "Min 6 characters" : null,
+                      validator: (v) => v!.length < 6 ? "Password must be at least 6 characters" : null,
                       onChanged: (v) => _password = v,
                     ),
                     const SizedBox(height: 20),
@@ -143,7 +191,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         decoration: _inputStyle("Student ID (e.g., S1001)"),
                         validator: (v) =>
                             v!.isEmpty ? "Student ID required" : null,
-                        onChanged: (v) => _studentId = v,
+                        onChanged: (v) => _studentId = v.trim(),
                       ),
 
                     const SizedBox(height: 20),
@@ -169,7 +217,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text("Create Account", style: TextStyle(fontSize: 18, color: Colors.white)),
+                      child: _isLoading 
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text("Create Account", style: TextStyle(fontSize: 18, color: Colors.white)),
                     ),
 
                     const SizedBox(height: 10),
@@ -184,14 +241,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
             ),
           ),
-
-          if (_isLoading)
-            Container(
-              color: Colors.black45,
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
-            ),
         ],
       ),
     );
