@@ -44,27 +44,18 @@ interface ChangePasswordBody {
     newPassword: string;
 }
 
-// --- Controller Functions ---
-
-/**
- * Retrieves a user's profile. Access is restricted:
- * - Librarians can view any profile.
- * - Students can only view their own profile.
- */
 export async function getUserProfile(
-    // FIX: Using AuthRequest<Params> which is now correctly generic
     req: AuthRequest<{ id: string }>, 
     res: Response
 ): Promise<Response> {
     const requestedId = req.params.id; 
-    const userId = req.user?.id; // The ID of the authenticated user
+    const userId = req.user?.id;
     const userRole = req.user?.role;
     
     if (!userId || !userRole) {
         return res.status(401).json({ message: 'Authentication required.' });
     }
 
-    // Authorization Check: Students can only view their own profile
     if (userRole === 'student' && userId !== requestedId) {
         return res.status(403).json({ message: 'Forbidden. Students may only view their own profile.' });
     }
@@ -72,7 +63,7 @@ export async function getUserProfile(
     try {
         const { data, error } = await supabase
             .from('users')
-            .select('*') // Select all columns for the profile
+            .select('*') 
             .eq('id', requestedId)
             .single();
 
@@ -81,19 +72,14 @@ export async function getUserProfile(
             return res.status(404).json({ message: 'User profile not found.' });
         }
         
-        // FIX: Added return statement
         return res.status(200).json(data);
 
     } catch (error) {
         console.error('Server error during profile fetch:', error);
-        // FIX: Added return statement
         return res.status(500).json({ message: 'Server error during profile fetch.' });
     }
 }
 
-/**
- * Allows the authenticated user to update their name and email.
- */
 export async function updateProfile(
     // FIX: Using AuthRequest<{}, {}, ReqBody>
     req: AuthRequest<{}, {}, UpdateProfileBody>, 

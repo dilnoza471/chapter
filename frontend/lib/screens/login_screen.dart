@@ -13,7 +13,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
 
-  // **MODIFIED:** Renamed from _email to _identifier to match backend
   String _identifier = ''; 
   String _password = '';
   bool _isLoading = false;
@@ -27,7 +26,6 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        // **MODIFIED:** Pass _identifier instead of _email
         await _authService.login(_identifier, _password); 
         final role = await _authService.getRole();
         widget.onLoginSuccess(role);
@@ -39,18 +37,14 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // 🎨 DESIGN FIX: Explicitly set border styles for visibility
   InputDecoration _input(String label) {
     return InputDecoration(
       labelText: label,
-      // Default border
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      // Border when enabled (not focused)
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.grey, width: 1.0),
       ),
-      // Border when focused
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.indigo, width: 2.0),
@@ -85,11 +79,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 30),
 
-                    // **MODIFIED:** Update label and onChanged to use _identifier
                     TextFormField(
-                      // **MODIFIED:** Changed label to reflect that it accepts both
                       decoration: _input("Email or Student ID"),
-                      // **MODIFIED:** Updated validator message
                       validator: (v) => v!.isEmpty ? "Enter your email or student ID" : null,
                       onChanged: (v) => _identifier = v, // Assign to _identifier
                     ),

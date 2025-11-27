@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
-// Note: Assuming AuthService and the definition of registrationBody 
-// are correctly handled in the imported files.
-// import '../services/auth_service.dart'; 
 
-// Placeholder for AuthService for runnable example
 class AuthService {
   Future<String> register(Map<String, dynamic> registrationData) async {
-    // In a real app, this would make an HTTP call with registrationData as JSON body
     print('Registering user with data: $registrationData');
     await Future.delayed(const Duration(milliseconds: 800)); 
     
-    // Simulate success or failure
     if (registrationData['email'] == 'fail@example.com') {
       throw Exception('This email is already registered.');
     }
@@ -31,7 +25,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
 
-  // Correctly defined fields for separate first and last names
   String _firstName = '';
   String _lastName = '';
   String _email = '';
@@ -46,7 +39,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save(); // Save the form fields
+      _formKey.currentState!.save();
       
       setState(() {
         _isLoading = true;
@@ -54,7 +47,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _isError = false;
       });
 
-      // Prepare the registration data body, matching the backend interface
       final Map<String, dynamic> registrationBody = {
         'email': _email,
         'password': _password,
@@ -63,7 +55,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'role': _role,
       };
 
-      // Only include student_id if the role is 'student'
       if (_role == 'student') {
         registrationBody['student_id'] = _studentId;
       }
@@ -88,18 +79,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
   
-  // 🎨 DESIGN FIX: Explicitly set border styles for visibility
   InputDecoration _inputStyle(String label) {
     return InputDecoration(
       labelText: label,
-      // Default border
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      // Border when enabled (not focused)
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.grey, width: 1.0),
       ),
-      // Border when focused
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.indigo, width: 2.0),
@@ -135,7 +122,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 30),
 
-                    // --- START FIX: Split Name Field ---
                     Row(
                       children: [
                         Expanded(
@@ -155,7 +141,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ],
                     ),
-                    // --- END FIX: Split Name Field ---
                     
                     const SizedBox(height: 20),
 
