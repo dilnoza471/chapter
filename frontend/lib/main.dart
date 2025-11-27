@@ -3,10 +3,10 @@ import 'package:frontend/screens/catalog_page.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/theme/theme_controller.dart';
 import 'package:frontend/screens/my_borrowings_screen.dart';
-import 'package:frontend/screens/profile_screen.dart'; // NEW: Profile screen for BottomNav
-import 'package:frontend/services/auth_service.dart'; // NEW: Auth Service
-import 'package:frontend/screens/login_screen.dart'; // NEW: Login Screen
-import 'package:frontend/screens/signup_screen.dart'; // NEW: Sign Up Screen
+import 'package:frontend/screens/profile_screen.dart';
+import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/screens/login_screen.dart';
+import 'package:frontend/screens/signup_screen.dart';
 
 final ThemeController themeController = ThemeController();
 
@@ -16,13 +16,92 @@ void main() async {
   runApp(const MyApp());
 }
 
-// --- NEW WIDGET: MyAppHome ---
-// This widget handles the authenticated state (Scaffold and BottomNavigationBar)
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final AuthService _authService = AuthService();
+  String? _role;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthStatus();
+  }
+
+  void _checkAuthStatus() async {
+    final role = await _authService.getRole();
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() {
+      _role = role;
+      _isLoading = false;
+    });
+  }
+
+  void _handleAuthSuccess(String? newRole) {
+    setState(() {
+      _role = newRole;
+    });
+  }
+
+  void _handleLogout() async {
+    await _authService.logout();
+    setState(() {
+      _role = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget homeWidget;
+
+    if (_isLoading) {
+      homeWidget = const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    } else if (_role == null) {
+      homeWidget = LoginScreen(onLoginSuccess: _handleAuthSuccess);
+    } else {
+      homeWidget = MyAppHome(userRole: _role!, onLogout: _handleLogout);
+    }
+
+    return AnimatedBuilder(
+      animation: themeController,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Library Management System',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeController.mode,
+          home: homeWidget,
+          routes: {
+            '/signup': (context) => SignUpScreen(
+              onSignUpSuccess: (role) {
+                _handleAuthSuccess(role);
+                Navigator.pop(context);
+              },
+            ),
+          },
+        );
+      },
+    );
+  }
+}
+
 class MyAppHome extends StatefulWidget {
   final String userRole;
   final VoidCallback onLogout;
   
-  const MyAppHome({super.key, required this.userRole, required this.onLogout});
+  const MyAppHome({
+    super.key, 
+    required this.userRole, 
+    required this.onLogout
+  });
 
   @override
   State<MyAppHome> createState() => _MyAppHomeState();
@@ -36,11 +115,10 @@ class _MyAppHomeState extends State<MyAppHome> {
   @override
   void initState() {
     super.initState();
-    // Initialize pages based on the provided userRole
     _pages = [
       CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
-      const MyBorrowingsScreen(), // Assuming this will be role-specific later
-      ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout), // New page
+      const MyBorrowingsScreen(), 
+      ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
     ];
   }
 
@@ -73,89 +151,6 @@ class _MyAppHomeState extends State<MyAppHome> {
           ),
         ],
       ),
-    );
-  }
-}
-
-// --- MAIN WIDGET: MyApp ---
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  final AuthService _authService = AuthService();
-  String? _role;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAuthStatus();
-  }
-
-  // Check for existing token/role to restore session
-  void _checkAuthStatus() async {
-    final role = await _authService.getRole();
-    setState(() {
-      _role = role;
-      _isLoading = false;
-    });
-  }
-
-  // Callback function to handle successful login/registration
-  void _handleAuthSuccess(String? newRole) {
-    setState(() {
-      _role = newRole;
-    });
-  }
-
-  // Callback function to handle logout
-  void _handleLogout() async {
-    await _authService.logout(); // Clears local session and optionally notifies backend
-    setState(() {
-      _role = null;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Determine the home widget based on authentication status
-    Widget homeWidget;
-
-    if (_isLoading) {
-      homeWidget = const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    } else if (_role == null) {
-      // Not logged in: Show Login screen with ability to navigate to Sign Up
-      homeWidget = LoginScreen(onLoginSuccess: _handleAuthSuccess);
-    } else {
-      // Logged in: Show the main app structure
-      homeWidget = MyAppHome(userRole: _role!, onLogout: _handleLogout);
-    }
-
-    return AnimatedBuilder(
-      animation: themeController,
-      builder: (context, _) {
-        return MaterialApp(
-          title: 'Library Management System',
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeController.mode,
-          // Use the determined home widget
-          home: homeWidget, 
-          // Define routes for navigation
-          routes: {
-            '/signup': (context) => SignUpScreen(onSignUpSuccess: (role) {
-                  // After successful sign up, go back to the login screen
-                  Navigator.pop(context); 
-                }),
-          },
-        );
-      },
     );
   }
 }

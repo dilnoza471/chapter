@@ -2,8 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
-// Assuming you have a User model defined in ../models/user.dart
-// import '../models/user.dart'; 
+
 
 class ProfileScreen extends StatefulWidget {
   final String userRole;
@@ -55,7 +54,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: [
-          // Add a refresh button
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _isLoading ? null : _fetchProfile,
