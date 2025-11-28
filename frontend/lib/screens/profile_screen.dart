@@ -44,6 +44,140 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _updateProfile(
+    String firstName, 
+    String lastName, 
+    String? studentId // Email parameter removed
+  ) async {
+    if (_userProfile == null) return;
+
+    // Check if name or student ID actually changed
+    final bool nameChanged = firstName != _userProfile!.firstName || lastName != _userProfile!.lastName;
+    final bool studentIdChanged = studentId != _userProfile!.studentId;
+
+    if (!nameChanged && !studentIdChanged) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No changes detected.'),
+            backgroundColor: Colors.blueGrey,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+    }
+    
+    // Show loading indicator
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Updating profile...'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    try {
+      await _authService.updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        // Email parameter removed
+        studentId: studentId,
+      );
+      
+      // Refresh UI and show success
+      await _fetchProfile();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ Profile updated successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      // Show error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Failed to update profile: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  void _showEditProfileDialog() {
+    if (_userProfile == null) return;
+    
+    // Email controller is removed
+    final firstNameController = TextEditingController(text: _userProfile!.firstName);
+    final lastNameController = TextEditingController(text: _userProfile!.lastName);
+    final studentIdController = TextEditingController(text: _userProfile!.studentId); 
+
+    final isStudent = widget.userRole == 'student';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Profile Details'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // First Name
+                TextField(
+                  controller: firstNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'First Name',
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Last Name
+                TextField(
+                  controller: lastNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Last Name',
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
+                ),
+                // Email field REMOVED
+                
+                if (isStudent) ...[
+                  const SizedBox(height: 16),
+                  // Student ID (Only visible and editable for students)
+                  TextField(
+                    controller: studentIdController,
+                    keyboardType: TextInputType.text,
+                    decoration: const InputDecoration(
+                      labelText: 'Student ID',
+                      prefixIcon: Icon(Icons.badge),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+                _updateProfile(
+                  firstNameController.text.trim(),
+                  lastNameController.text.trim(),
+                  isStudent ? studentIdController.text.trim() : null, // Email argument removed
+                );
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Determine the primary color based on the user role
@@ -224,13 +358,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     child: IconButton(
                                       icon: const Icon(Icons.edit, color: Colors.white),
-                                      onPressed: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Edit Profile feature coming soon!'),
-                                          ),
-                                        );
-                                      },
+                                      onPressed: _showEditProfileDialog,
                                       tooltip: 'Edit Profile',
                                     ),
                                   ),

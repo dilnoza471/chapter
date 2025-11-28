@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import { supabase } from '../config/supabaseClient.js'; 
 
-// --- Interfaces ---
 
-// Define the structure of the user data returned from the database query
 interface UserProfile {
     id: string;
     name: string;
@@ -13,18 +11,12 @@ interface UserProfile {
     created_at: string;
 }
 
-// Define the expected structure of the decoded JWT payload stored in req.user
 export interface AuthenticatedUser {
     id: string;
     role: 'student' | 'librarian';
     email: string;
 }
 
-/**
- * Extend the Express Request type to include the authenticated user payload.
- * FIX: We make AuthRequest generic by passing through the Express Request generics 
- * (P=Params, ResB=ResponseBody, ReqB=RequestBody) and set default types.
- */
 export interface AuthRequest<
     P = {}, 
     ResB = any, 
@@ -33,13 +25,12 @@ export interface AuthRequest<
     user?: AuthenticatedUser;
 }
 
-// Define body structure for updating the profile
 interface UpdateProfileBody {
     name?: string;
-    email?: string; 
+    email?: string;
+    student_id?: string; 
 }
 
-// Define body structure for changing password
 interface ChangePasswordBody {
     newPassword: string;
 }
@@ -80,58 +71,85 @@ export async function getUserProfile(
     }
 }
 
+// In src/controllers/user.controller.js
+
+// ... (inside updateProfile function)
+
+// In src/controllers/user.controller.js
+
+// ... (inside updateProfile function)
+
 export async function updateProfile(
-    // FIX: Using AuthRequest<{}, {}, ReqBody>
     req: AuthRequest<{}, {}, UpdateProfileBody>, 
     res: Response
 ): Promise<Response> {
     
     const userId = req.user?.id;
-    const { name, email } = req.body; 
+    // --- UPDATED: Only destruct name and student_id ---
+    const { name, student_id } = req.body; 
+    // const currentEmail = req.user?.email; <--- REMOVED
 
     if (!userId) {
         return res.status(401).json({ message: 'Authentication required.' });
     }
     
-    // Only allow name update for now, email requires a separate Supabase flow
     if (!name) {
-        return res.status(400).json({ message: 'Name is required for profile update.' });
+        return res.status(400).json({ message: 'Full name is required for profile update.' });
     }
 
+    let profileUpdated = false;
+
     try {
-        // Prepare update data
-        const updateData: Partial<UpdateProfileBody> = {};
-        if (name) updateData.name = name;
-        // NOTE: Updating email here requires a special Supabase function (updateUserByEmail)
-        // For simplicity, we only allow name updates in the public.users table.
+        const updateProfileData: any = {}; 
 
-        const { data, error } = await supabase
-            .from('users')
-            .update(updateData)
-            .eq('id', userId)
-            .select() // Return the updated row
-            .single();
-
-        if (error) {
-            console.error('Error updating profile:', error.message);
-            return res.status(500).json({ message: 'Failed to update profile.' });
+        // 1. Handle Name (public.users table update)
+        const parts = name.trim().split(/\s+/);
+        updateProfileData.firstname = parts[0];
+        updateProfileData.lastname = parts.length > 1 ? parts.slice(1).join(' ') : '';
+        
+        // 2. Handle Student ID (public.users table update)
+        if (student_id !== undefined) {
+            updateProfileData.student_id = student_id;
         }
         
-        // FIX: Added return statement
-        return res.status(200).json({ message: 'Profile updated successfully.', user: data });
+        // Log the update data for debugging
+        console.log('Update Data:', updateProfileData);
 
-    } catch (error) {
-        console.error('Server error during profile update:', error);
-        // FIX: Added return statement
-        return res.status(500).json({ message: 'Server error during profile update.' });
+        // Execute Profile (public.users) Update
+        if (Object.keys(updateProfileData).length > 0) {
+            const { data, error: profileError } = await supabase
+                .from('users')
+                .update(updateProfileData) 
+                .eq('id', userId)
+                .select()
+                .single();
+
+            if (profileError) {
+                console.error('❌ Supabase Profile Update Error:', profileError.message);
+                throw new Error('Database update failed.');
+            }
+            profileUpdated = true;
+        }
+
+        // --- EMAIL UPDATE LOGIC REMOVED ENTIRELY ---
+        
+        if (!profileUpdated) {
+            return res.status(200).json({ message: 'No changes detected.' });
+        }
+        
+        return res.status(200).json({ message: 'Profile updated successfully.' });
+
+    } catch (error: any) {
+        console.error('❌ Server error during profile update:', error);
+        const errorMessage = error.message.includes('Database update failed')
+            ? error.message
+            : 'Server error during profile update.';
+            
+        return res.status(500).json({ message: errorMessage });
     }
 }
 
-/**
- * Allows the authenticated user to change their password.
- */
 export async function changePassword(
-    // FIX: Using AuthRequest<{}, {}, ReqBody>
     req: AuthRequest<{}, {}, ChangePasswordBody>, 
     res: Response
 ): Promise<Response> {
@@ -146,7 +164,6 @@ export async function changePassword(
     }
 
     try {
-        // Supabase function to update user password
         const { error: updateError } = await supabase.auth.updateUser({
             password: newPassword
         });
@@ -156,12 +173,10 @@ export async function changePassword(
             return res.status(500).json({ message: 'Failed to change password. This often requires the user to be recently authenticated.' });
         }
         
-        // FIX: Added return statement
         return res.status(200).json({ message: 'Password changed successfully.' });
 
     } catch (error) {
         console.error('Server error during password change:', error);
-        // FIX: Added return statement
         return res.status(500).json({ message: 'Server error during password change.' });
     }
 }
