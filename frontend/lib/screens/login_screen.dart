@@ -40,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
   InputDecoration _input(String label) {
     return InputDecoration(
       labelText: label,
+      labelStyle: const TextStyle(color: Colors.white),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -80,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 30),
 
                     TextFormField(
+                      style: const TextStyle(color: Colors.white),
                       decoration: _input("Email or Student ID"),
                       validator: (v) => v!.isEmpty ? "Enter your email or student ID" : null,
                       onChanged: (v) => _identifier = v, // Assign to _identifier
@@ -87,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
 
                     TextFormField(
+                      style: const TextStyle(color: Colors.white),
                       obscureText: true,
                       decoration: _input("Password"),
                       validator: (v) => v!.isEmpty ? "Enter password" : null,

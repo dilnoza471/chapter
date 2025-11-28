@@ -64,6 +64,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   InputDecoration _inputStyle(String label) {
     return InputDecoration(
       labelText: label,
+      labelStyle: const TextStyle(color: Colors.white),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -105,6 +106,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   children: [
                     Expanded(
                       child: TextFormField(
+                        // ADDED STYLE
+                        style: const TextStyle(color: Colors.white), 
                         decoration: _inputStyle("First Name"),
                         validator: (v) => v!.isEmpty ? "Enter first name" : null,
                         onSaved: (v) => _firstName = v!.trim(),
@@ -113,6 +116,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(width: 15),
                     Expanded(
                       child: TextFormField(
+                        // ADDED STYLE
+                        style: const TextStyle(color: Colors.white),
                         decoration: _inputStyle("Last Name"),
                         validator: (v) => v!.isEmpty ? "Enter last name" : null,
                         onSaved: (v) => _lastName = v!.trim(),
@@ -122,6 +127,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
+                  // ADDED STYLE
+                  style: const TextStyle(color: Colors.white),
                   decoration: _inputStyle("Email"),
                   validator: (v) =>
                       v!.isEmpty || !v.contains('@') ? "Enter a valid email" : null,
@@ -130,6 +137,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
+                  // ADDED STYLE
+                  style: const TextStyle(color: Colors.white),
                   obscureText: true,
                   decoration: _inputStyle("Password"),
                   validator: (v) =>
@@ -138,9 +147,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<String>(
+                  // Dropdown should also use white text for the selected value
+                  style: const TextStyle(color: Colors.white), 
                   value: _role,
                   decoration: _inputStyle("Registering as"),
                   items: const [
+                    // Text children in DropdownMenuItem often inherit the TextStyle
                     DropdownMenuItem(value: "student", child: Text("Student")),
                     DropdownMenuItem(value: "librarian", child: Text("Librarian")),
                   ],
@@ -149,6 +161,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 20),
                 if (_role == "student")
                   TextFormField(
+                    // ADDED STYLE
+                    style: const TextStyle(color: Colors.white),
                     decoration: _inputStyle("Student ID"),
                     validator: (v) => v!.isEmpty ? "Student ID required" : null,
                     onSaved: (v) => _studentId = v!.trim(),
