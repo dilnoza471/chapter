@@ -10,8 +10,12 @@ class CatalogPage extends StatefulWidget {
   // NEW: Add userRole and onLogout as required parameters
   final String userRole;
   final VoidCallback onLogout;
-  
-  const CatalogPage({super.key, required this.userRole, required this.onLogout});
+
+  const CatalogPage({
+    super.key,
+    required this.userRole,
+    required this.onLogout,
+  });
 
   @override
   State<CatalogPage> createState() => _CatalogPageState();
@@ -23,7 +27,7 @@ class _CatalogPageState extends State<CatalogPage>
   bool isLoading = true;
   String? errorMessage;
   // IMPORTANT: Use 10.0.2.2 for Android emulator to reach localhost
-  final baseUrl = "http://127.0.0.1:5001"; 
+  final baseUrl = "http://localhost:5001";
   late AnimationController _animationController;
 
   @override
@@ -145,11 +149,11 @@ class _CatalogPageState extends State<CatalogPage>
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: MediaQuery.of(context).size.width >= 800
-                      ? 200 
-                      : 160, 
+                      ? 200
+                      : 160,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 3 / 5.4, 
+                  childAspectRatio: 3 / 5.4,
                 ),
                 delegate: SliverChildBuilderDelegate((context, index) {
                   return FadeTransition(
@@ -199,7 +203,8 @@ class _CatalogPageState extends State<CatalogPage>
           const Icon(Icons.search_rounded, color: Colors.grey),
           const SizedBox(width: 8),
           const Expanded(
-            child: TextField( // Changed from Text to TextField for search
+            child: TextField(
+              // Changed from Text to TextField for search
               decoration: InputDecoration.collapsed(
                 hintText: 'Search books, authors...',
                 hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
