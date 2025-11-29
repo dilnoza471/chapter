@@ -6,11 +6,7 @@ import dotenv from 'dotenv';
 import booksRoute from './routes/booksRoute.js';
 import authRoutes from './routes/auth.routes.js'; // Assumes routes/auth.routes.ts is present
 import userRoutes from './routes/user.routes.js';
-<<<<<<< HEAD
 import borrowRoute from './routes/borrowRoute.js';
-=======
-
->>>>>>> origin/librarian/assign
 dotenv.config();
 const app = express();
 
