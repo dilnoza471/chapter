@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/catalog_page.dart';
 import 'package:frontend/screens/id_entry_screen.dart';
+import 'package:frontend/screens/add_book_screen.dart'; // NEW IMPORT
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/theme/theme_controller.dart';
 import 'package:frontend/screens/my_borrowings_screen.dart';
@@ -74,9 +75,9 @@ class _MyAppState extends State<MyApp> {
         return MaterialApp(
           title: 'Library Management System',
           theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeController.mode,
+          themeMode: themeController.mode, 
           home: homeWidget,
+
           routes: {
             '/signup': (context) => SignUpScreen(
               onSignUpSuccess: (role) {
@@ -127,14 +128,17 @@ class _MyAppHomeState extends State<MyAppHome> {
       ];
       _selectedIndex = 0; // students start on Catalog
     } else {
+      // LIBRARIAN NAVIGATION - NOW WITH ADD BOOK PAGE
       _pages = [
         CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
         IdEntryScreen(),
+        const AddBookScreen(), // NEW: Add Book Screen
         ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
       ];
       _navItems = const [
         BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Catalog'),
         BottomNavigationBarItem(icon: Icon(Icons.add_box), label: 'Borrow'),
+        BottomNavigationBarItem(icon: Icon(Icons.library_add), label: 'Add Book'), // NEW
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ];
       _selectedIndex = 1; // librarians start on Borrow page
