@@ -21,14 +21,40 @@ class CatalogPage extends StatefulWidget {
 
 class _CatalogPageState extends State<CatalogPage> {
   List<BookModel> books = [];
+  List<BookModel> filteredBooks = [];
   bool isLoading = true;
   String? errorMessage;
   final baseUrl = "https://chapter-djfj.onrender.com";
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchBooks();
+    _searchController.addListener(_filterBooks);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterBooks() {
+    final query = _searchController.text.toLowerCase().trim();
+    
+    setState(() {
+      if (query.isEmpty) {
+        filteredBooks = books;
+      } else {
+        filteredBooks = books.where((book) {
+          final titleMatch = book.title.toLowerCase().contains(query);
+          final authorMatch = book.author.toLowerCase().contains(query);
+          final categoryMatch = book.category.toLowerCase().contains(query);
+          return titleMatch || authorMatch || categoryMatch;
+        }).toList();
+      }
+    });
   }
 
   Future<void> fetchBooks() async {
@@ -43,6 +69,7 @@ class _CatalogPageState extends State<CatalogPage> {
         final List data = json.decode(response.body);
         setState(() {
           books = data.map((json) => BookModel.fromJson(json)).toList();
+          filteredBooks = books;
           isLoading = false;
         });
       } else {
@@ -57,6 +84,10 @@ class _CatalogPageState extends State<CatalogPage> {
         isLoading = false;
       });
     }
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
   }
 
   @override
@@ -146,22 +177,36 @@ class _CatalogPageState extends State<CatalogPage> {
                 ),
               ),
             )
-          else if (books.isEmpty)
-            const SliverFillRemaining(
+          else if (filteredBooks.isEmpty)
+            SliverFillRemaining(
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.library_books_outlined,
-                      color: Color(0xFF90A4AE),
+                      _searchController.text.isNotEmpty
+                          ? Icons.search_off
+                          : Icons.library_books_outlined,
+                      color: const Color(0xFF90A4AE),
                       size: 64,
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
-                      'No books found.',
-                      style: TextStyle(fontSize: 18, color: Color(0xFF90A4AE)),
+                      _searchController.text.isNotEmpty
+                          ? 'No books match your search.'
+                          : 'No books found.',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Color(0xFF90A4AE),
+                      ),
                     ),
+                    if (_searchController.text.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: _clearSearch,
+                        child: const Text('Clear Search'),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -180,17 +225,19 @@ class _CatalogPageState extends State<CatalogPage> {
                 ),
                 delegate: SliverChildBuilderDelegate((context, index) {
                   return BookWidget(
-                    book: books[index],
+                    book: filteredBooks[index],
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => BookDetailsPage(book: books[index]),
+                          builder: (_) => BookDetailsPage(
+                            book: filteredBooks[index],
+                          ),
                         ),
                       );
                     },
                   );
-                }, childCount: books.length),
+                }, childCount: filteredBooks.length),
               ),
             ),
         ],
@@ -218,15 +265,22 @@ class _CatalogPageState extends State<CatalogPage> {
           const SizedBox(width: 16),
           const Icon(Icons.search_rounded, color: Color(0xFF1E88E5), size: 24),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: TextField(
-              decoration: InputDecoration.collapsed(
-                hintText: 'Search books, authors...',
+              controller: _searchController,
+              decoration: const InputDecoration.collapsed(
+                hintText: 'Search books, authors, categories...',
                 hintStyle: TextStyle(color: Color(0xFF90A4AE), fontSize: 15),
               ),
-              style: TextStyle(color: Color(0xFF263238), fontSize: 15),
+              style: const TextStyle(color: Color(0xFF263238), fontSize: 15),
             ),
           ),
+          if (_searchController.text.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear, color: Color(0xFF90A4AE)),
+              onPressed: _clearSearch,
+              tooltip: 'Clear',
+            ),
           Container(
             margin: const EdgeInsets.only(right: 4),
             decoration: BoxDecoration(
