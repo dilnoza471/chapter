@@ -131,7 +131,7 @@ class AuthService {
     required String firstName,
     required String lastName,
     // Email field removed from signature
-    String? studentId,
+    int? studentId,
   }) async {
     print('=== UPDATE PROFILE REQUEST ===');
 
@@ -147,7 +147,7 @@ class AuthService {
     final body = {'name': fullName};
     // Email field REMOVED from the body logic
     if (studentId != null) {
-      body['student_id'] = studentId;
+      body['student_id'] = studentId as String;
     }
 
     try {
@@ -181,7 +181,7 @@ class AuthService {
     required String email,
     required String password,
     required String role,
-    String? studentId,
+    int? studentId,
   }) async {
     print('=== REGISTRATION REQUEST ===');
     print('Email: $email, Role: $role');
@@ -194,8 +194,8 @@ class AuthService {
       'role': role,
     };
 
-    if (role == 'student' && studentId != null && studentId.isNotEmpty) {
-      body['student_id'] = studentId;
+    if (role == 'student' && studentId != null) {
+      body['student_id'] = studentId as String;
       print('Student ID: $studentId');
     }
 

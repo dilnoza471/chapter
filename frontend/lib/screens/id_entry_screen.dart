@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_spacing.dart';
@@ -39,13 +42,35 @@ class _IdEntryScreenState extends State<IdEntryScreen> {
     return '';
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
+    final baseUrl = "https://chapter-djfj.onrender.com";
     setState(() {
-      _studentIdError = _validateNumber(_studentIdController.text, 'Student ID');
+      _studentIdError = _validateNumber(
+        _studentIdController.text,
+        'Student ID',
+      );
       _bookIdError = _validateNumber(_bookIdController.text, 'Book ID');
     });
 
     if (_studentIdError.isEmpty && _bookIdError.isEmpty) {
+      final response = await http.post(
+        Uri.parse('$baseUrl/borrow'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          // send the actual text and numeric student_id
+          'book_isbn': _bookIdController.text.trim(),
+          'student_id': int.parse(_studentIdController.text.trim()),
+        }),
+      );
+      if (response.statusCode != 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Submission failed: Response body: ${response.body}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -54,7 +79,9 @@ class _IdEntryScreenState extends State<IdEntryScreen> {
           backgroundColor: AppColors.primary,
         ),
       );
-      print('Submitted: Student ID: ${_studentIdController.text}, Book ID: ${_bookIdController.text}');
+      print(
+        'Submitted: Student ID: ${_studentIdController.text}, Book ID: ${_bookIdController.text}',
+      );
     }
   }
 
@@ -62,9 +89,7 @@ class _IdEntryScreenState extends State<IdEntryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppGradients.background,
-        ),
+        decoration: BoxDecoration(gradient: AppGradients.background),
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.containerPadding),
@@ -79,7 +104,9 @@ class _IdEntryScreenState extends State<IdEntryScreen> {
                 ),
               ),
               child: Container(
-                constraints: const BoxConstraints(maxWidth: AppSpacing.cardMaxWidth),
+                constraints: const BoxConstraints(
+                  maxWidth: AppSpacing.cardMaxWidth,
+                ),
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

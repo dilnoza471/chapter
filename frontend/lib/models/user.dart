@@ -1,48 +1,30 @@
 class User {
-  final String id;
   final String firstName;
   final String lastName;
+  final String fullName;
   final String email;
-  final String role;
-  final String? studentId;
-  final DateTime? createdAt;
-
-  String get fullName => '$firstName $lastName';
+  final int? studentId;
 
   User({
-    required this.id,
     required this.firstName,
     required this.lastName,
+    required this.fullName,
     required this.email,
-    required this.role,
     this.studentId,
-    this.createdAt,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as String,
-      // Handle both camelCase and lowercase from backend
-      firstName: json['firstname'] as String? ?? json['firstName'] as String? ?? '',
-      lastName: json['lastname'] as String? ?? json['lastName'] as String? ?? '',
-      email: json['email'] as String,
-      role: json['role'] as String,
-      studentId: json['student_id'] as String?,
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at'] as String)
-          : null,
+      firstName: json['first_name'] ?? '',
+      lastName: json['last_name'] ?? '',
+      fullName: json['full_name'] ?? '',
+      email: json['email'] ?? '',
+      // student_id may be an int or a string — normalize to int?
+      studentId: json['student_id'] is int
+          ? json['student_id'] as int
+          : (json['student_id'] is String
+                ? int.tryParse(json['student_id'])
+                : null),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'firstname': firstName,
-      'lastname': lastName,
-      'email': email,
-      'role': role,
-      'student_id': studentId,
-      'created_at': createdAt?.toIso8601String(),
-    };
   }
 }

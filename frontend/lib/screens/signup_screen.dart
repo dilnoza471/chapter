@@ -35,13 +35,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
       });
 
       try {
+        final int? parsedStudentId = _role == 'student'
+            ? int.tryParse(_studentId.trim())
+            : null;
+
+        if (_role == 'student' && (parsedStudentId == null)) {
+          throw Exception('Please enter a valid numeric student ID.');
+        }
+
         final result = await _authService.register(
           firstName: _firstName,
           lastName: _lastName,
           email: _email,
           password: _password,
           role: _role,
-          studentId: _role == 'student' ? _studentId : null,
+          studentId: parsedStudentId,
         );
 
         setState(() {
@@ -157,7 +165,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   items: const [
                     // Text children in DropdownMenuItem often inherit the TextStyle
                     DropdownMenuItem(value: "student", child: Text("Student")),
-                    DropdownMenuItem(value: "librarian", child: Text("Librarian")),
+                    DropdownMenuItem(
+                      value: "librarian",
+                      child: Text("Librarian"),
+                    ),
                   ],
                   onChanged: (v) => setState(() => _role = v!),
                 ),

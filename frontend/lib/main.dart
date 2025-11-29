@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/catalog_page.dart';
+import 'package:frontend/screens/id_entry_screen.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/theme/theme_controller.dart';
 import 'package:frontend/screens/my_borrowings_screen.dart';
@@ -8,7 +9,8 @@ import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/signup_screen.dart';
 import 'package:frontend/screens/borrow_book_page.dart';
-ThemeController  themeController = ThemeController();
+
+ThemeController themeController = ThemeController();
 void main() {
   runApp(const MyApp());
 }
@@ -128,7 +130,7 @@ class _MyAppHomeState extends State<MyAppHome> {
     } else {
       _pages = [
         CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
-        BorrowBookPage(),
+        IdEntryScreen(),
         ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
       ];
       _navItems = const [
