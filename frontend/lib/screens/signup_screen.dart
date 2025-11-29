@@ -13,7 +13,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
 
-  String _name = '';
+  String _firstName = '';
+  String _lastName = '';
   String _email = '';
   String _password = '';
   String _studentId = '';
@@ -25,6 +26,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
       setState(() {
         _isLoading = true;
         _message = null;
@@ -33,7 +36,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       try {
         final result = await _authService.register(
-          name: _name,
+          firstName: _firstName,
+          lastName: _lastName,
           email: _email,
           password: _password,
           role: _role,
@@ -57,18 +61,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  // 🎨 DESIGN FIX: Explicitly set border styles for visibility
   InputDecoration _inputStyle(String label) {
     return InputDecoration(
       labelText: label,
-      // Default border
+      labelStyle: const TextStyle(color: Colors.white),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      // Border when enabled (not focused)
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.grey, width: 1.0),
       ),
-      // Border when focused
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.indigo, width: 2.0),
@@ -84,115 +85,134 @@ class _SignUpScreenState extends State<SignUpScreen> {
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
       ),
-      body: Stack(
-        children: [
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(32),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  "Join LMS",
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+                Row(
                   children: [
-                    Text(
-                      "Join LMS",
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.indigo,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 30),
-
-                    TextFormField(
-                      decoration: _inputStyle("Full Name"),
-                      validator: (v) => v!.isEmpty ? "Please enter name" : null,
-                      onChanged: (v) => _name = v,
-                    ),
-                    const SizedBox(height: 20),
-
-                    TextFormField(
-                      decoration: _inputStyle("Email"),
-                      validator: (v) => v!.isEmpty ? "Enter email" : null,
-                      onChanged: (v) => _email = v,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 20),
-
-                    TextFormField(
-                      obscureText: true,
-                      decoration: _inputStyle("Password"),
-                      validator: (v) => v!.length < 6 ? "Min 6 characters" : null,
-                      onChanged: (v) => _password = v,
-                    ),
-                    const SizedBox(height: 20),
-
-                    DropdownButtonFormField<String>(
-                      value: _role,
-                      decoration: _inputStyle("Registering as"),
-                      items: const [
-                        DropdownMenuItem(value: "student", child: Text("Student")),
-                        DropdownMenuItem(value: "librarian", child: Text("Librarian")),
-                      ],
-                      onChanged: (v) => setState(() => _role = v!),
-                    ),
-                    const SizedBox(height: 20),
-
-                    if (_role == "student")
-                      TextFormField(
-                        decoration: _inputStyle("Student ID (e.g., S1001)"),
-                        validator: (v) =>
-                            v!.isEmpty ? "Student ID required" : null,
-                        onChanged: (v) => _studentId = v,
+                    Expanded(
+                      child: TextFormField(
+                        // ADDED STYLE
+                        style: const TextStyle(color: Colors.white), 
+                        decoration: _inputStyle("First Name"),
+                        validator: (v) => v!.isEmpty ? "Enter first name" : null,
+                        onSaved: (v) => _firstName = v!.trim(),
                       ),
-
-                    const SizedBox(height: 20),
-
-                    if (_message != null)
-                      Text(
-                        _message!,
-                        style: TextStyle(
-                          color: _isError ? Colors.red : Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-
-                    const SizedBox(height: 20),
-
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text("Create Account", style: TextStyle(fontSize: 18, color: Colors.white)),
                     ),
-
-                    const SizedBox(height: 10),
-
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("Already have an account? Log In",
-                          style: TextStyle(color: Colors.indigo)),
-                    )
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: TextFormField(
+                        // ADDED STYLE
+                        style: const TextStyle(color: Colors.white),
+                        decoration: _inputStyle("Last Name"),
+                        validator: (v) => v!.isEmpty ? "Enter last name" : null,
+                        onSaved: (v) => _lastName = v!.trim(),
+                      ),
+                    ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  // ADDED STYLE
+                  style: const TextStyle(color: Colors.white),
+                  decoration: _inputStyle("Email"),
+                  validator: (v) =>
+                      v!.isEmpty || !v.contains('@') ? "Enter a valid email" : null,
+                  onSaved: (v) => _email = v!.trim(),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  // ADDED STYLE
+                  style: const TextStyle(color: Colors.white),
+                  obscureText: true,
+                  decoration: _inputStyle("Password"),
+                  validator: (v) =>
+                      v!.length < 6 ? "Password must be at least 6 characters" : null,
+                  onSaved: (v) => _password = v!,
+                ),
+                const SizedBox(height: 20),
+                DropdownButtonFormField<String>(
+                  // Dropdown should also use white text for the selected value
+                  style: const TextStyle(color: Colors.white), 
+                  value: _role,
+                  decoration: _inputStyle("Registering as"),
+                  items: const [
+                    // Text children in DropdownMenuItem often inherit the TextStyle
+                    DropdownMenuItem(value: "student", child: Text("Student")),
+                    DropdownMenuItem(value: "librarian", child: Text("Librarian")),
+                  ],
+                  onChanged: (v) => setState(() => _role = v!),
+                ),
+                const SizedBox(height: 20),
+                if (_role == "student")
+                  TextFormField(
+                    // ADDED STYLE
+                    style: const TextStyle(color: Colors.white),
+                    decoration: _inputStyle("Student ID"),
+                    validator: (v) => v!.isEmpty ? "Student ID required" : null,
+                    onSaved: (v) => _studentId = v!.trim(),
+                  ),
+                const SizedBox(height: 20),
+                if (_message != null)
+                  Text(
+                    _message!,
+                    style: TextStyle(
+                      color: _isError ? Colors.red : Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          "Create Account",
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                ),
+                const SizedBox(height: 10),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Already have an account? Log In",
+                    style: TextStyle(color: Colors.indigo),
+                  ),
+                )
+              ],
             ),
           ),
-
-          if (_isLoading)
-            Container(
-              color: Colors.black45,
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
