@@ -3,6 +3,6 @@ import { makeBorrow } from "../controllers/borrowController.js";
 
 const router = Router();
 
-router.post("/borrow", makeBorrow);
+router.post("/", makeBorrow);
 
 export default router;

@@ -2,18 +2,16 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:intl/intl.dart';
 import '../models/book_model.dart';
+
 class BookDetailsPage extends StatelessWidget {
   final BookModel book;
 
-  const BookDetailsPage({
-    super.key,
-    required this.book,
-  });
+  const BookDetailsPage({super.key, required this.book});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF5F7FA),
       body: CustomScrollView(
         slivers: [
           // Glassy App Bar with Book Cover
@@ -39,7 +37,7 @@ class BookDetailsPage extends StatelessWidget {
                     ),
                     child: IconButton(
                       icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                      color: Colors.black87,
+                      color: const Color(0xFF1E88E5),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
@@ -55,13 +53,13 @@ class BookDetailsPage extends StatelessWidget {
                     book.coverImageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      return Container(color: Colors.grey[300]);
+                      return Container(color: const Color(0xFFE3F2FD));
                     },
                   ),
                   BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                     child: Container(
-                      color: Colors.black.withOpacity(0.3),
+                      color: const Color(0xFF1E88E5).withOpacity(0.4),
                     ),
                   ),
                   // Centered Book Cover
@@ -87,8 +85,12 @@ class BookDetailsPage extends StatelessWidget {
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.book, size: 64),
+                              color: const Color(0xFFE3F2FD),
+                              child: const Icon(
+                                Icons.book,
+                                size: 64,
+                                color: Color(0xFF1E88E5),
+                              ),
                             );
                           },
                         ),
@@ -114,6 +116,7 @@ class BookDetailsPage extends StatelessWidget {
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       height: 1.2,
+                      color: Color(0xFF263238),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -121,9 +124,9 @@ class BookDetailsPage extends StatelessWidget {
                   // Author
                   Text(
                     'by ${book.author}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
-                      color: Colors.grey[700],
+                      color: Color(0xFF546E7A),
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -147,14 +150,15 @@ class BookDetailsPage extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
+                            color: Color(0xFF263238),
                           ),
                         ),
                         const Spacer(),
                         Text(
                           '${book.availableCopies} of ${book.totalCopies} available',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: Color(0xFF546E7A),
                           ),
                         ),
                       ],
@@ -189,7 +193,9 @@ class BookDetailsPage extends StatelessWidget {
                         child: _buildInfoCard(
                           icon: Icons.calendar_today_outlined,
                           label: 'Published',
-                          value: DateFormat('MMM dd, yyyy').format(book.publicationDate),
+                          value: DateFormat(
+                            'MMM dd, yyyy',
+                          ).format(book.publicationDate),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -210,16 +216,17 @@ class BookDetailsPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      color: Color(0xFF263238),
                     ),
                   ),
                   const SizedBox(height: 12),
                   _buildGlassyCard(
                     child: Text(
                       book.description,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 15,
                         height: 1.6,
-                        color: Colors.grey[800],
+                        color: Color(0xFF546E7A),
                       ),
                     ),
                   ),
@@ -227,28 +234,39 @@ class BookDetailsPage extends StatelessWidget {
 
                   // Borrow Button
                   _buildGlassyButton(
-                    onPressed: book.isAvailable ? () {
-                      // TODO: Implement borrow functionality
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Borrow functionality coming soon!'),
-                        ),
-                      );
-                    } : null,
+                    onPressed: book.isAvailable
+                        ? () {
+                            // TODO: Implement borrow functionality
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Borrow functionality coming soon!',
+                                ),
+                                backgroundColor: Color(0xFF1E88E5),
+                              ),
+                            );
+                          }
+                        : null,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           book.isAvailable ? Icons.bookmark_add : Icons.block,
-                          color: book.isAvailable ? Colors.white : Colors.grey[400],
+                          color: book.isAvailable
+                              ? Colors.white
+                              : const Color(0xFF9E9E9E),
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          book.isAvailable ? 'Borrow This Book' : 'Not Available',
+                          book.isAvailable
+                              ? 'Borrow This Book'
+                              : 'Not Available',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: book.isAvailable ? Colors.white : Colors.grey[400],
+                            color: book.isAvailable
+                                ? Colors.white
+                                : const Color(0xFF9E9E9E),
                           ),
                         ),
                       ],
@@ -274,13 +292,10 @@ class BookDetailsPage extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.7),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
-              width: 1,
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: const Color(0xFF1E88E5).withOpacity(0.08),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -301,14 +316,11 @@ class BookDetailsPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: Colors.blue[700]),
+          Icon(icon, size: 20, color: const Color(0xFF1E88E5)),
           const SizedBox(height: 8),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: const TextStyle(fontSize: 12, color: Color(0xFF90A4AE)),
           ),
           const SizedBox(height: 4),
           Text(
@@ -316,6 +328,7 @@ class BookDetailsPage extends StatelessWidget {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
+              color: Color(0xFF263238),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -337,25 +350,19 @@ class BookDetailsPage extends StatelessWidget {
           height: 60,
           decoration: BoxDecoration(
             gradient: onPressed != null
-                ? LinearGradient(
+                ? const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Colors.blue[600]!,
-                      Colors.blue[800]!,
-                    ],
+                    colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
                   )
                 : null,
-            color: onPressed == null ? Colors.grey[300] : null,
+            color: onPressed == null ? const Color(0xFFE0E0E0) : null,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
-              width: 1,
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
             boxShadow: onPressed != null
                 ? [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
+                      color: const Color(0xFF1E88E5).withOpacity(0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -377,10 +384,10 @@ class BookDetailsPage extends StatelessWidget {
 
   Color _getAvailabilityColor() {
     if (book.availableCopies == 0) {
-      return Colors.red;
+      return const Color(0xFFE53935);
     } else if (book.availableCopies <= 2) {
-      return Colors.orange;
+      return const Color(0xFFFB8C00);
     }
-    return Colors.green;
+    return const Color(0xFF43A047);
   }
 }

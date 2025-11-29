@@ -96,9 +96,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Text(
                   "Join LMS",
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 30),
@@ -107,9 +107,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     Expanded(
                       child: TextFormField(
                         // ADDED STYLE
-                        style: const TextStyle(color: Colors.white), 
+                        style: const TextStyle(color: Colors.black),
                         decoration: _inputStyle("First Name"),
-                        validator: (v) => v!.isEmpty ? "Enter first name" : null,
+                        validator: (v) =>
+                            v!.isEmpty ? "Enter first name" : null,
                         onSaved: (v) => _firstName = v!.trim(),
                       ),
                     ),
@@ -117,7 +118,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     Expanded(
                       child: TextFormField(
                         // ADDED STYLE
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.black),
                         decoration: _inputStyle("Last Name"),
                         validator: (v) => v!.isEmpty ? "Enter last name" : null,
                         onSaved: (v) => _lastName = v!.trim(),
@@ -128,33 +129,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 20),
                 TextFormField(
                   // ADDED STYLE
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.black),
                   decoration: _inputStyle("Email"),
-                  validator: (v) =>
-                      v!.isEmpty || !v.contains('@') ? "Enter a valid email" : null,
+                  validator: (v) => v!.isEmpty || !v.contains('@')
+                      ? "Enter a valid email"
+                      : null,
                   onSaved: (v) => _email = v!.trim(),
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   // ADDED STYLE
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.black),
                   obscureText: true,
                   decoration: _inputStyle("Password"),
-                  validator: (v) =>
-                      v!.length < 6 ? "Password must be at least 6 characters" : null,
+                  validator: (v) => v!.length < 6
+                      ? "Password must be at least 6 characters"
+                      : null,
                   onSaved: (v) => _password = v!,
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<String>(
                   // Dropdown should also use white text for the selected value
-                  style: const TextStyle(color: Colors.white), 
+                  style: const TextStyle(color: Colors.black),
                   value: _role,
                   decoration: _inputStyle("Registering as"),
                   items: const [
                     // Text children in DropdownMenuItem often inherit the TextStyle
                     DropdownMenuItem(value: "student", child: Text("Student")),
-                    DropdownMenuItem(value: "librarian", child: Text("Librarian")),
+                    DropdownMenuItem(
+                      value: "librarian",
+                      child: Text("Librarian"),
+                    ),
                   ],
                   onChanged: (v) => setState(() => _role = v!),
                 ),
@@ -162,7 +168,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 if (_role == "student")
                   TextFormField(
                     // ADDED STYLE
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.black),
                     decoration: _inputStyle("Student ID"),
                     validator: (v) => v!.isEmpty ? "Student ID required" : null,
                     onSaved: (v) => _studentId = v!.trim(),
@@ -208,7 +214,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     "Already have an account? Log In",
                     style: TextStyle(color: Colors.indigo),
                   ),
-                )
+                ),
               ],
             ),
           ),
