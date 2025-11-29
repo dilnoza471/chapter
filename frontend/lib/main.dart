@@ -7,6 +7,13 @@ import 'package:frontend/screens/profile_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/signup_screen.dart';
+import 'package:frontend/screens/favorites_screen.dart';
+import 'package:frontend/screens/announcements_screen.dart';
+import '../models/book_model.dart';
+import 'package:frontend/services/announcement_service.dart';
+import 'package:frontend/services/favorites_service.dart';
+import 'package:frontend/services/books_service.dart';
+
 
 final ThemeController themeController = ThemeController();
 
@@ -112,12 +119,31 @@ class _MyAppHomeState extends State<MyAppHome> {
   
   late final List<Widget> _pages;
 
+Future<BookModel> _fetchBookById(String id) async {
+  final service = BooksService(baseUrl: "https://chapter-djfj.onrender.com");
+  return await service.getBookById(id);
+}
+
+
   @override
   void initState() {
     super.initState();
     _pages = [
       CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
       const MyBorrowingsScreen(), 
+      FavoritesScreen(
+    favoritesService: FavoritesService(
+      baseUrl: "https://chapter-djfj.onrender.com",
+    ),
+    fetchBookById: _fetchBookById,
+    authToken: null, // or pass token if you store it
+  ),
+
+  AnnouncementsScreen(
+    announcementService: AnnouncementService(
+      baseUrl: "https://chapter-djfj.onrender.com",
+    ),
+  ),     // <-- NEW
       ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
     ];
   }
@@ -144,6 +170,14 @@ class _MyAppHomeState extends State<MyAppHome> {
           BottomNavigationBarItem(
             icon: Icon(Icons.assignment),
             label: 'My Loans',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.campaign),
+            label: 'News',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
