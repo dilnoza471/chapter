@@ -3,10 +3,11 @@ import 'package:frontend/screens/catalog_page.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/theme/theme_controller.dart';
 import 'package:frontend/screens/my_borrowings_screen.dart';
-import 'package:frontend/screens/profile_screen.dart'; // NEW: Profile screen for BottomNav
-import 'package:frontend/services/auth_service.dart'; // NEW: Auth Service
-import 'package:frontend/screens/login_screen.dart'; // NEW: Login Screen
-import 'package:frontend/screens/signup_screen.dart'; // NEW: Sign Up Screen
+import 'package:frontend/screens/profile_screen.dart';
+import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/screens/login_screen.dart';
+import 'package:frontend/screens/signup_screen.dart';
+import 'package:frontend/screens/borrow_book_page.dart';
 
 final ThemeController themeController = ThemeController();
 
@@ -16,68 +17,6 @@ void main() async {
   runApp(const MyApp());
 }
 
-// --- NEW WIDGET: MyAppHome ---
-// This widget handles the authenticated state (Scaffold and BottomNavigationBar)
-class MyAppHome extends StatefulWidget {
-  final String userRole;
-  final VoidCallback onLogout;
-  
-  const MyAppHome({super.key, required this.userRole, required this.onLogout});
-
-  @override
-  State<MyAppHome> createState() => _MyAppHomeState();
-}
-
-class _MyAppHomeState extends State<MyAppHome> {
-  int _selectedIndex = 0;
-  
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize pages based on the provided userRole
-    _pages = [
-      CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
-      const MyBorrowingsScreen(), // Assuming this will be role-specific later
-      ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout), // New page
-    ];
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: Theme.of(context).primaryColor,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Catalog',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'My Loans',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// --- MAIN WIDGET: MyApp ---
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -96,25 +35,23 @@ class _MyAppState extends State<MyApp> {
     _checkAuthStatus();
   }
 
-  // Check for existing token/role to restore session
   void _checkAuthStatus() async {
     final role = await _authService.getRole();
+    await Future.delayed(const Duration(milliseconds: 500));
     setState(() {
       _role = role;
       _isLoading = false;
     });
   }
 
-  // Callback function to handle successful login/registration
   void _handleAuthSuccess(String? newRole) {
     setState(() {
       _role = newRole;
     });
   }
 
-  // Callback function to handle logout
   void _handleLogout() async {
-    await _authService.logout(); // Clears local session and optionally notifies backend
+    await _authService.logout();
     setState(() {
       _role = null;
     });
@@ -122,7 +59,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine the home widget based on authentication status
     Widget homeWidget;
 
     if (_isLoading) {
@@ -130,10 +66,8 @@ class _MyAppState extends State<MyApp> {
         body: Center(child: CircularProgressIndicator()),
       );
     } else if (_role == null) {
-      // Not logged in: Show Login screen with ability to navigate to Sign Up
       homeWidget = LoginScreen(onLoginSuccess: _handleAuthSuccess);
     } else {
-      // Logged in: Show the main app structure
       homeWidget = MyAppHome(userRole: _role!, onLogout: _handleLogout);
     }
 
@@ -145,17 +79,87 @@ class _MyAppState extends State<MyApp> {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeController.mode,
-          // Use the determined home widget
-          home: homeWidget, 
-          // Define routes for navigation
+          home: homeWidget,
           routes: {
-            '/signup': (context) => SignUpScreen(onSignUpSuccess: (role) {
-                  // After successful sign up, go back to the login screen
-                  Navigator.pop(context); 
-                }),
+            '/signup': (context) => SignUpScreen(
+              onSignUpSuccess: (role) {
+                _handleAuthSuccess(role);
+                Navigator.pop(context);
+              },
+            ),
           },
         );
       },
+    );
+  }
+}
+
+class MyAppHome extends StatefulWidget {
+  final String userRole;
+  final VoidCallback onLogout;
+
+  const MyAppHome({super.key, required this.userRole, required this.onLogout});
+
+  @override
+  State<MyAppHome> createState() => _MyAppHomeState();
+}
+
+class _MyAppHomeState extends State<MyAppHome> {
+  int _selectedIndex = 0;
+  late final List<Widget> _pages;
+  late final List<BottomNavigationBarItem> _navItems;
+
+  @override
+  void initState() {
+    super.initState();
+    final isStudent = widget.userRole.toLowerCase() == 'student';
+
+    if (isStudent) {
+      _pages = [
+        CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
+        const MyBorrowingsScreen(),
+        ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
+      ];
+      _navItems = const [
+        BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Catalog'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.assignment),
+          label: 'My Loans',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+      ];
+      _selectedIndex = 0; // students start on Catalog
+    } else {
+      _pages = [
+        CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
+        BorrowBookPage(),
+        ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
+      ];
+      _navItems = const [
+        BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Catalog'),
+        BottomNavigationBarItem(icon: Icon(Icons.add_box), label: 'Borrow'),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+      ];
+      _selectedIndex = 1; // librarians start on Borrow page
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Theme.of(context).primaryColor,
+        items: _navItems,
+      ),
     );
   }
 }

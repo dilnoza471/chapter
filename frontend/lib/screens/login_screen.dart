@@ -13,7 +13,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
 
-  String _email = '';
+  String _identifier = ''; 
   String _password = '';
   bool _isLoading = false;
   String? _errorMessage;
@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        await _authService.login(_email, _password);
+        await _authService.login(_identifier, _password); 
         final role = await _authService.getRole();
         widget.onLoginSuccess(role);
       } catch (e) {
@@ -37,18 +37,15 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // 🎨 DESIGN FIX: Explicitly set border styles for visibility
   InputDecoration _input(String label) {
     return InputDecoration(
       labelText: label,
-      // Default border
+      labelStyle: const TextStyle(color: Colors.white),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      // Border when enabled (not focused)
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.grey, width: 1.0),
       ),
-      // Border when focused
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.indigo, width: 2.0),
@@ -84,13 +81,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 30),
 
                     TextFormField(
-                      decoration: _input("Email"),
-                      validator: (v) => v!.isEmpty ? "Enter email" : null,
-                      onChanged: (v) => _email = v,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: _input("Email or Student ID"),
+                      validator: (v) => v!.isEmpty ? "Enter your email or student ID" : null,
+                      onChanged: (v) => _identifier = v, // Assign to _identifier
                     ),
                     const SizedBox(height: 20),
 
                     TextFormField(
+                      style: const TextStyle(color: Colors.white),
                       obscureText: true,
                       decoration: _input("Password"),
                       validator: (v) => v!.isEmpty ? "Enter password" : null,

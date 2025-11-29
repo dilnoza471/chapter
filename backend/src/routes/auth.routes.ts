@@ -1,8 +1,6 @@
-// src/routes/auth.routes.js
-
 import express from 'express';
-// ✅ CORRECT: Import register and login from auth.controller.js
-import { register, login ,logout} from '../controllers/auth.controller.js'; 
+// FIXED for ESM: Added .js extension to controller import
+import { register, login, logout } from '../controllers/auth.controller.js'; 
 
 const router = express.Router();
 

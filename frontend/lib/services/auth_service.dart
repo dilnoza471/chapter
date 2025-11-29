@@ -1,30 +1,24 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-// import '../models/user.dart'; // Ensure this model import is correct
 
-// IMPORTANT: Replace this with your actual backend URL
-const String _baseUrl = 'http://127.0.0.1:5001/auth';
-
-const String _userBaseUrl = 'http://127.0.0.1:5001/users';
-
-// 10.0.2.2 is the special address to access the host machine's localhost from an Android emulator.
-// Use 'http://localhost:5000/auth' for web or iOS simulator.
+const String _baseUrl = 'https://chapter-djfj.onrender.com/auth';
+const String _userBaseUrl = 'https://chapter-djfj.onrender.com/users';
 
 class AuthService {
-  // Static keys for shared preferences
   static const String _tokenKey = 'jwtToken';
   static const String _userRoleKey = 'userRole';
 
   String? _cachedToken;
   String? _cachedRole;
 
-  // --- Session Management ---
-
   Future<String?> getToken() async {
     if (_cachedToken != null) return _cachedToken;
     final prefs = await SharedPreferences.getInstance();
     _cachedToken = prefs.getString(_tokenKey);
+    print(
+      '📱 Retrieved token: ${_cachedToken != null ? "Token exists (${_cachedToken!.length} chars)" : "No token"}',
+    );
     return _cachedToken;
   }
 
@@ -41,6 +35,7 @@ class AuthService {
     await prefs.setString(_userRoleKey, role);
     _cachedToken = token;
     _cachedRole = role;
+    print('✅ Session saved - Role: $role');
   }
 
   Future<void> clearSession() async {
@@ -49,113 +44,218 @@ class AuthService {
     await prefs.remove(_userRoleKey);
     _cachedToken = null;
     _cachedRole = null;
+    print('🗑️ Session cleared');
   }
-  
-  // --- API Calls ---
 
-  // Login: POST /auth/login
-  Future<String> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/login'),
-      headers: {'Content-Type': 'application/json'},
-      // 🚨 FIX HERE: Changed 'email' to 'identifier'
-      body: jsonEncode({'identifier': email, 'password': password}), 
-    );
+  Future<String> login(String identifier, String password) async {
+    print('=== LOGIN REQUEST ===');
+    print('Identifier: $identifier');
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final token = data['token'] as String;
-      final role = data['role'] as String;
-      await _saveSession(token, role);
-      return 'Success';
-    } else {
-      final errorData = jsonDecode(response.body);
-      throw Exception(errorData['message'] ?? 'Login failed');
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'identifier': identifier, 'password': password}),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['token'] as String;
+        final role = data['role'] as String;
+        await _saveSession(token, role);
+        print('✅ Login successful');
+        return 'Success';
+      } else {
+        final errorData = jsonDecode(response.body);
+        print('❌ Login failed: ${errorData['message']}');
+        throw Exception(errorData['message'] ?? 'Login failed');
+      }
+    } catch (e) {
+      print('❌ Login error: $e');
+      rethrow;
     }
   }
 
   Future<Map<String, dynamic>> fetchUserProfile() async {
+    print('=== FETCH PROFILE REQUEST ===');
+
     final token = await getToken();
     if (token == null) {
+      print('❌ No token found');
       throw Exception('Not logged in. Token not found.');
     }
 
-    // This calls the protected route GET /users/me
-    final response = await http.get(
-      Uri.parse('$_userBaseUrl/me'), 
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
+    print('📤 Making request to: $_userBaseUrl/me');
+    print(
+      'Token (first 30 chars): ${token.substring(0, token.length > 30 ? 30 : token.length)}...',
     );
 
-    if (response.statusCode == 200) {
-      // Return the JSON response map
-      return jsonDecode(response.body) as Map<String, dynamic>;
-    } else if (response.statusCode == 403) {
-      throw Exception('Access denied. Invalid token.');
-    } else {
-      final errorData = jsonDecode(response.body);
-      throw Exception(errorData['message'] ?? 'Failed to fetch profile.');
+    try {
+      final response = await http.get(
+        Uri.parse('$_userBaseUrl/me'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('✅ Profile fetched successfully');
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else if (response.statusCode == 401) {
+        print('❌ Unauthorized - Token may be expired');
+        await clearSession(); // Clear invalid session
+        throw Exception('Session expired. Please login again.');
+      } else if (response.statusCode == 403) {
+        print('❌ Forbidden - Invalid token');
+        await clearSession(); // Clear invalid session
+        throw Exception('Access denied. Please login again.');
+      } else {
+        final errorData = jsonDecode(response.body);
+        print('❌ Error: ${errorData['message']}');
+        throw Exception(errorData['message'] ?? 'Failed to fetch profile.');
+      }
+    } catch (e) {
+      print('❌ Profile fetch error: $e');
+      rethrow;
     }
   }
 
-  // Registration: POST /auth/register
+  Future<void> updateProfile({
+    required String firstName,
+    required String lastName,
+    // Email field removed from signature
+    String? studentId,
+  }) async {
+    print('=== UPDATE PROFILE REQUEST ===');
+
+    final token = await getToken();
+    if (token == null) {
+      print('❌ No token found');
+      throw Exception('Not logged in. Token not found.');
+    }
+
+    final fullName = '$firstName $lastName';
+
+    // Build the request body with only name and student_id
+    final body = {'name': fullName};
+    // Email field REMOVED from the body logic
+    if (studentId != null) {
+      body['student_id'] = studentId;
+    }
+
+    try {
+      final response = await http.put(
+        Uri.parse('$_userBaseUrl/me'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body), // Only sends name and student_id
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode != 200) {
+        final errorData = jsonDecode(response.body);
+        print('❌ Update failed: ${errorData['message']}');
+        throw Exception(errorData['message'] ?? 'Failed to update profile.');
+      }
+      print('✅ Profile updated successfully');
+    } catch (e) {
+      print('❌ Profile update error: $e');
+      rethrow;
+    }
+  }
+
   Future<String> register({
-    required String name,
+    required String firstName,
+    required String lastName,
     required String email,
     required String password,
     required String role,
     String? studentId,
   }) async {
+    print('=== REGISTRATION REQUEST ===');
+    print('Email: $email, Role: $role');
+
     final body = {
-      'name': name,
+      'firstname': firstName,
+      'lastname': lastName,
       'email': email,
       'password': password,
       'role': role,
     };
-    
-    // Only include student_id if the user is a student
+
     if (role == 'student' && studentId != null && studentId.isNotEmpty) {
       body['student_id'] = studentId;
+      print('Student ID: $studentId');
     }
 
-    final response = await http.post(
-      Uri.parse('$_baseUrl/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
 
-    if (response.statusCode == 201) {
-      return 'Registration successful! You can now log in.';
-    } else {
-      final errorData = jsonDecode(response.body);
-      // Backend error messages like 'User with this email already exists.'
-      throw Exception(errorData['message'] ?? 'Registration failed.');
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final token = data['token'] as String;
+        final role = data['role'] as String;
+        await _saveSession(token, role);
+        print('✅ Registration successful');
+        return 'Registration successful!';
+      } else if (response.statusCode == 202) {
+        print('⚠️ Email confirmation required');
+        final data = jsonDecode(response.body);
+        throw Exception(
+          data['message'] ?? 'Please check your email for confirmation.',
+        );
+      } else {
+        final errorData = jsonDecode(response.body);
+        print('❌ Registration failed: ${errorData['message']}');
+        throw Exception(errorData['message'] ?? 'Registration failed.');
+      }
+    } catch (e) {
+      print('❌ Registration error: $e');
+      rethrow;
     }
   }
 
-  // Logout: POST /auth/logout
   Future<void> logout() async {
-    final token = await getToken();
-    if (token == null) return;
+    print('=== LOGOUT REQUEST ===');
 
-    // Call the backend to invalidate the session/token (if implemented)
-    // NOTE: If your backend's /auth/logout is not protected, you don't need the token here.
-    // If it is protected, you must include the Authorization header.
+    final token = await getToken();
+    if (token == null) {
+      print('No token to logout with');
+      return;
+    }
+
     try {
-        await http.post(
-          Uri.parse('$_baseUrl/logout'),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        );
+      final response = await http.post(
+        Uri.parse('$_baseUrl/logout'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      print('Logout response: ${response.statusCode}');
     } catch (e) {
-      // Ignore network errors during logout, client-side session clearing is paramount
-      print('Logout API call failed, but clearing local session: $e');
+      print('Logout API call failed (will clear local session anyway): $e');
     } finally {
       await clearSession();
+      print('✅ Logout complete');
     }
   }
 }

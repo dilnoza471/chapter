@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { getAllBooks, getBookById } from "../services/booksService.js";
-import { get } from "http";
 
 export async function getBooks(req: Request, res: Response) {
   try {
