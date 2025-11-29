@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/catalog_page.dart';
+import 'package:frontend/screens/id_entry_screen.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/theme/theme_controller.dart';
 import 'package:frontend/screens/my_borrowings_screen.dart';
@@ -8,11 +9,8 @@ import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/signup_screen.dart';
 
-final ThemeController themeController = ThemeController();
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await themeController.load();
+ThemeController themeController = ThemeController();
+void main() {
   runApp(const MyApp());
 }
 
@@ -96,12 +94,8 @@ class _MyAppState extends State<MyApp> {
 class MyAppHome extends StatefulWidget {
   final String userRole;
   final VoidCallback onLogout;
-  
-  const MyAppHome({
-    super.key, 
-    required this.userRole, 
-    required this.onLogout
-  });
+
+  const MyAppHome({super.key, required this.userRole, required this.onLogout});
 
   @override
   State<MyAppHome> createState() => _MyAppHomeState();
@@ -109,17 +103,42 @@ class MyAppHome extends StatefulWidget {
 
 class _MyAppHomeState extends State<MyAppHome> {
   int _selectedIndex = 0;
-  
   late final List<Widget> _pages;
+  late final List<BottomNavigationBarItem> _navItems;
 
   @override
   void initState() {
     super.initState();
-    _pages = [
-      CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
-      const MyBorrowingsScreen(), 
-      ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
-    ];
+    final isStudent = widget.userRole.toLowerCase() == 'student';
+
+    if (isStudent) {
+      _pages = [
+        CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
+        const MyBorrowingsScreen(),
+        ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
+      ];
+      _navItems = const [
+        BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Catalog'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.assignment),
+          label: 'My Loans',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+      ];
+      _selectedIndex = 0; // students start on Catalog
+    } else {
+      _pages = [
+        CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
+        IdEntryScreen(),
+        ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
+      ];
+      _navItems = const [
+        BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Catalog'),
+        BottomNavigationBarItem(icon: Icon(Icons.add_box), label: 'Borrow'),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+      ];
+      _selectedIndex = 1; // librarians start on Borrow page
+    }
   }
 
   void _onItemTapped(int index) {
@@ -136,20 +155,7 @@ class _MyAppHomeState extends State<MyAppHome> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         selectedItemColor: Theme.of(context).primaryColor,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Catalog',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'My Loans',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+        items: _navItems,
       ),
     );
   }
