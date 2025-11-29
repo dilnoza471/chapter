@@ -157,10 +157,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   items: const [
                     // Text children in DropdownMenuItem often inherit the TextStyle
                     DropdownMenuItem(value: "student", child: Text("Student")),
-                    DropdownMenuItem(
-                      value: "librarian",
-                      child: Text("Librarian"),
-                    ),
+                    DropdownMenuItem(value: "librarian", child: Text("Librarian")),
                   ],
                   onChanged: (v) => setState(() => _role = v!),
                 ),

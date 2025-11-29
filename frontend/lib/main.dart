@@ -8,12 +8,8 @@ import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/signup_screen.dart';
 import 'package:frontend/screens/borrow_book_page.dart';
-
-final ThemeController themeController = ThemeController();
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await themeController.load();
+ThemeController  themeController = ThemeController();
+void main() {
   runApp(const MyApp());
 }
 
