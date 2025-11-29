@@ -75,9 +75,8 @@ class _MyAppState extends State<MyApp> {
         return MaterialApp(
           title: 'Library Management System',
           theme: AppTheme.lightTheme,
-          // darkTheme: AppTheme.darkTheme, // optional, can remove
+          themeMode: themeController.mode, 
           home: homeWidget,
-          themeMode: ThemeMode.dark,
 
           routes: {
             '/signup': (context) => SignUpScreen(
