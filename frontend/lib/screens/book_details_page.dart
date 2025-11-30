@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:intl/intl.dart';
 import '../models/book_model.dart';
+import '../widgets/favorite_heart_icon.dart';
 
 class BookDetailsPage extends StatelessWidget {
   final BookModel book;
@@ -44,6 +45,19 @@ class BookDetailsPage extends StatelessWidget {
                 ),
               ),
             ),
+            actions: [
+    Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: FavoriteHeartIcon(
+        bookIsbn: book.isbn,
+        initialIsFavorited: false,
+        onFavoriteChanged: () {
+          // Optionally refresh or update UI
+        },
+      ),
+    ),
+  ],
+
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,

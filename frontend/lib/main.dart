@@ -8,9 +8,20 @@ import 'package:frontend/screens/profile_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/signup_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:frontend/screens/favorites_screen.dart';
 
 ThemeController themeController = ThemeController();
-void main() {
+void main() async {
+
+WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: 'https://dyxbxwhgsnfysrdgalzq.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eGJ4d2hnc25meXNyZGdhbHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTkyNDI5NDYsImV4cCI6MTgzMjEwMDU0Nn0.X0dTWCVr-yY_hZoHH1x3O6p8UXx7Z-8c8v8F6N9K4Aw',
+  );
+
   runApp(const MyApp());
 }
 
@@ -115,6 +126,7 @@ class _MyAppHomeState extends State<MyAppHome> {
       _pages = [
         CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
         const MyBorrowingsScreen(),
+        const FavoritesScreen(),
         ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
       ];
       _navItems = const [
@@ -123,6 +135,7 @@ class _MyAppHomeState extends State<MyAppHome> {
           icon: Icon(Icons.assignment),
           label: 'My Loans',
         ),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ];
       _selectedIndex = 0; // students start on Catalog
