@@ -41,7 +41,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           email: _email,
           password: _password,
           role: _role,
-          studentId: _role == 'student' ? int.tryParse(_studentId) : null,
+          studentId: _role == 'student' ? _studentId : null,
         );
 
         setState(() {
