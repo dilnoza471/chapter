@@ -10,6 +10,7 @@ import borrowRoute from "./routes/borrowRoute.js";
 import favoritesRoute from "./routes/favoritesRoute.js";
 import borrowingRoutes from "./routes/borrowingRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -30,6 +31,7 @@ app.use("/borrow", borrowRoute);
 app.use("/favorites", favoritesRoute);
 app.use("/borrowings", borrowingRoutes);
 app.use("/reservations", reservationRoutes);
+app.use("/notifications", notificationRoutes);
 
 const port = process.env.PORT || 5001;
 app.listen(port, () => console.log(`Server running on port ${port}`));

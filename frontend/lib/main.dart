@@ -21,6 +21,7 @@ void main() async {
 
   final notificationService = NotificationService();
   await notificationService.initialize();
+ 
 
   // Initialize Supabase
   await Supabase.initialize(

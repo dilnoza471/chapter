@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { getBorrowingsByUser } from "../services/borrowingService.js";
+//js files need to be imported
 
 export async function getUserBorrowings(req: Request, res: Response) {
   try {
