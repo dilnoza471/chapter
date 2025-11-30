@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/auth_service.dart';
 import '../models/loan.dart';
 import '../services/borrowing_service.dart';
 import '../widgets/borrowing_card.dart';
 import '../services/notification_service.dart';
 
 class MyBorrowingsScreen extends StatefulWidget {
-  final String studentId;
-
-  const MyBorrowingsScreen({Key? key, required this.studentId}) : super(key: key);
+  const MyBorrowingsScreen({super.key});
 
   @override
   State<MyBorrowingsScreen> createState() => _MyBorrowingsScreenState();
@@ -15,6 +14,7 @@ class MyBorrowingsScreen extends StatefulWidget {
 
 class _MyBorrowingsScreenState extends State<MyBorrowingsScreen> {
   List<Loan> borrowings = [];
+  String studentId = '';
   final notificationService = NotificationService();
   late BorrowingService borrowingService;
   bool isLoading = true;
@@ -22,22 +22,31 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen> {
   @override
   void initState() {
     super.initState();
-    borrowingService = BorrowingService(baseUrl: 'https://chapter-djfj.onrender.com');
+
+    borrowingService = BorrowingService(
+      //baseUrl: 'http://localhost:5001/api/borrowings',
+      baseUrl: 'https://chapter-djfj.onrender.com/api/borrowings',
+    );
     _loadBorrowings();
   }
 
   Future<void> _loadBorrowings() async {
     setState(() => isLoading = true);
     try {
-      final fetchedBorrowings = await borrowingService.getLoansByStudent(widget.studentId);
+      studentId = await AuthService().getStudentId();
+      final fetchedBorrowings = await borrowingService.getLoansByStudent(
+        studentId,
+      );
       setState(() {
-        borrowings = fetchedBorrowings.where((b) => b.status == 'active').toList();
+        borrowings = fetchedBorrowings
+            .where((b) => b.status == 'active')
+            .toList();
       });
       _scheduleNotifications();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load borrowings: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load borrowings: $e')));
     } finally {
       setState(() => isLoading = false);
     }
@@ -82,7 +91,10 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen> {
                         color: Colors.red,
                         shape: BoxShape.circle,
                       ),
-                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
                       child: Text(
                         '$overDueCount',
                         style: const TextStyle(
@@ -102,41 +114,39 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : borrowings.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.library_books_outlined,
-                        size: 80,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'No borrowed books',
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Visit the library catalog to borrow books',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.library_books_outlined,
+                    size: 80,
+                    color: Colors.grey[400],
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadBorrowings,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: borrowings.length,
-                    itemBuilder: (context, index) {
-                      final borrowing = borrowings[index];
-                      return BorrowingCard(
-                        borrowing: borrowing,
-                      );
-                    },
+                  const SizedBox(height: 16),
+                  const Text(
+                    'No borrowed books',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Visit the library catalog to borrow books',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadBorrowings,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: borrowings.length,
+                itemBuilder: (context, index) {
+                  final borrowing = borrowings[index];
+                  return BorrowingCard(borrowing: borrowing);
+                },
+              ),
+            ),
     );
   }
 }

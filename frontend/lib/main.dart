@@ -128,7 +128,7 @@ class _MyAppHomeState extends State<MyAppHome> {
     if (isStudent) {
       _pages = [
         CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
-        MyBorrowingsScreen(studentId: Supabase.instance.client.auth.currentUser!.id),
+        MyBorrowingsScreen(),
         const FavoritesScreen(),
         ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
       ];
