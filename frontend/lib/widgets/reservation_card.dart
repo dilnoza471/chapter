@@ -16,6 +16,14 @@ class ReservationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isAvailable = reservation.status == 'available';
 
+    // Replacement for foreground.withOpacity(0.7)
+    final fadedForeground = Color.fromRGBO(
+      AppColors.foreground.red,
+      AppColors.foreground.green,
+      AppColors.foreground.blue,
+      0.7,
+    );
+
     return Card(
       color: AppColors.card,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -27,9 +35,10 @@ class ReservationCard extends StatelessWidget {
             Text(
               reservation.book.title,
               style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.foreground),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.foreground,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -38,8 +47,8 @@ class ReservationCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Reserved on: ${reservation.reservationDate.toLocal().toString().split(' ')[0]}',
-              style: TextStyle(fontSize: 12, color: AppColors.foreground.withOpacity(0.7)),
+              'Reserved on: ${reservation.reservedAt.toLocal().toString().split(' ')[0]}',
+              style: TextStyle(fontSize: 12, color: fadedForeground),
             ),
             Text(
               'Status: ${reservation.status}',
@@ -49,11 +58,7 @@ class ReservationCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            if (reservation.queuePosition > 1)
-              Text(
-                'Queue position: ${reservation.queuePosition}',
-                style: TextStyle(fontSize: 12, color: AppColors.foreground.withOpacity(0.7)),
-              ),
+
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -70,4 +75,3 @@ class ReservationCard extends StatelessWidget {
     );
   }
 }
-
