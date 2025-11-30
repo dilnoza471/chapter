@@ -23,7 +23,7 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
   void initState() {
     super.initState();
     // Initialize the service with your backend URL
-    reservationService = ReservationService(baseUrl: 'http://localhost:3000/api');
+    reservationService = ReservationService(baseUrl: 'https://chapter-djfj.onrender.com');
     _loadReservations();
   }
 

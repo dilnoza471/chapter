@@ -22,7 +22,7 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen> {
   @override
   void initState() {
     super.initState();
-    borrowingService = BorrowingService(baseUrl: 'http://localhost:3000/api');
+    borrowingService = BorrowingService(baseUrl: 'https://chapter-djfj.onrender.com');
     _loadBorrowings();
   }
 
