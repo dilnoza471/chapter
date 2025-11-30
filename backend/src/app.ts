@@ -10,6 +10,8 @@ import borrowRoute from './routes/borrowRoute.js';
 import favoritesRoute from './routes/favoritesRoute.js';
 import borrowingRoutes from "./routes/borrowingRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
+import notificationRoutes from './routes/notificationRoutes';
+
 
 
 
@@ -32,6 +34,7 @@ app.use('/borrow', borrowRoute);
 app.use('/api/favorites', favoritesRoute);
 app.use("/api/borrowings", borrowingRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use('/notifications', notificationRoutes);
 
 const port = process.env.PORT || 5001;
 app.listen(port, () => console.log(`Server running on port ${port}`));

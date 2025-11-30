@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+import '../services/notification_service.dart';
+import '../models/notification_model.dart';
+import '../services/auth_service.dart';
 import '../screens/notifications_screen.dart';
+import '../theme/app_colors.dart';
 
 class NotificationIcon extends StatefulWidget {
   const NotificationIcon({super.key});
@@ -10,13 +13,28 @@ class NotificationIcon extends StatefulWidget {
 }
 
 class _NotificationIconState extends State<NotificationIcon> {
+  final NotificationService _notificationService = NotificationService();
   int _unreadCount = 0;
+  String _studentId = '';
 
   @override
   void initState() {
     super.initState();
-    // TODO: fetch actual unread notifications from backend or local storage
-    _unreadCount = 3; // example, replace with real value
+    _fetchUnreadCount();
+  }
+
+  Future<void> _fetchUnreadCount() async {
+    try {
+      _studentId = await AuthService().getStudentId();
+      final notifications = await _notificationService.getNotificationsByStudent(_studentId);
+      setState(() {
+        _unreadCount = notifications.where((n) => !n.isRead!).length;
+      });
+    } catch (_) {
+      setState(() {
+        _unreadCount = 0;
+      });
+    }
   }
 
   @override
@@ -25,15 +43,14 @@ class _NotificationIconState extends State<NotificationIcon> {
       children: [
         IconButton(
           icon: const Icon(Icons.notifications),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const NotificationsScreen(),
-              ),
-            );
-          },
           color: AppColors.foreground,
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            );
+            _fetchUnreadCount(); // refresh count after returning
+          },
         ),
         if (_unreadCount > 0)
           Positioned(
