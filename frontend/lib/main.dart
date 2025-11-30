@@ -21,11 +21,7 @@ void main() async {
 
   final notificationService = NotificationService();
   await notificationService.initialize();
-  await notificationService.scheduleBookDueReminder(
-  bookTitle: 'Flutter Book',
-  dueDate: DateTime.now().add(const Duration(seconds: 10)), // 10 seconds later
-  notificationId: 1,
-);
+ 
 
   // Initialize Supabase
   await Supabase.initialize(

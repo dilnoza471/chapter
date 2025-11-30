@@ -10,7 +10,7 @@ import borrowRoute from './routes/borrowRoute.js';
 import favoritesRoute from './routes/favoritesRoute.js';
 import borrowingRoutes from "./routes/borrowingRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
-import notificationRoutes from './routes/notificationRoutes';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 
 
