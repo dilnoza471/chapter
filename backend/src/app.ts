@@ -8,6 +8,12 @@ import authRoutes from './routes/auth.routes.js'; // Assumes routes/auth.routes.
 import userRoutes from './routes/user.routes.js';
 import borrowRoute from './routes/borrowRoute.js';
 import favoritesRoute from './routes/favoritesRoute.js';
+import borrowingRoutes from "./routes/borrowingRoutes.js";
+import reservationRoutes from "./routes/reservationRoutes.js";
+
+
+
+
 
 dotenv.config();
 const app = express();
@@ -24,6 +30,8 @@ app.use('/users', userRoutes);
 app.use('/books', booksRoute);
 app.use('/borrow', borrowRoute);
 app.use('/api/favorites', favoritesRoute);
+app.use("/api/borrowings", borrowingRoutes);
+app.use("/api/reservations", reservationRoutes);
 
 const port = process.env.PORT || 5001;
 app.listen(port, () => console.log(`Server running on port ${port}`));
