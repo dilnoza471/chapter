@@ -28,9 +28,7 @@ export interface AuthRequest<
 interface UpdateProfileBody {
     name?: string;
     email?: string;
-    student_id?: string; 
 }
-
 interface ChangePasswordBody {
     newPassword: string;
 }
@@ -85,9 +83,8 @@ export async function updateProfile(
 ): Promise<Response> {
     
     const userId = req.user?.id;
-    // --- UPDATED: Only destruct name and student_id ---
-    const { name, student_id } = req.body; 
-    // const currentEmail = req.user?.email; <--- REMOVED
+    // ✅ ONLY allow name updates
+    const { name } = req.body; 
 
     if (!userId) {
         return res.status(401).json({ message: 'Authentication required.' });
@@ -97,45 +94,34 @@ export async function updateProfile(
         return res.status(400).json({ message: 'Full name is required for profile update.' });
     }
 
-    let profileUpdated = false;
-
     try {
         const updateProfileData: any = {}; 
 
-        // 1. Handle Name (public.users table update)
+        // Handle Name only (public.users table update)
         const parts = name.trim().split(/\s+/);
         updateProfileData.firstname = parts[0];
         updateProfileData.lastname = parts.length > 1 ? parts.slice(1).join(' ') : '';
         
-        // 2. Handle Student ID (public.users table update)
-        if (student_id !== undefined) {
-            updateProfileData.student_id = student_id;
-        }
+        // ❌ REMOVED: Student ID update logic entirely
+        // Student ID should never be updated by users
         
-        // Log the update data for debugging
         console.log('Update Data:', updateProfileData);
 
-        // Execute Profile (public.users) Update
-        if (Object.keys(updateProfileData).length > 0) {
-            const { data, error: profileError } = await supabase
-                .from('users')
-                .update(updateProfileData) 
-                .eq('id', userId)
-                .select()
-                .single();
+        // Execute Profile Update
+        const { data, error: profileError } = await supabase
+            .from('users')
+            .update(updateProfileData) 
+            .eq('id', userId)
+            .select()
+            .single();
 
-            if (profileError) {
-                console.error('❌ Supabase Profile Update Error:', profileError.message);
-                throw new Error('Database update failed.');
-            }
-            profileUpdated = true;
+        if (profileError) {
+            console.error('❌ Supabase Profile Update Error:', profileError.message);
+            console.error('❌ Full error details:', profileError);
+            throw new Error('Database update failed.');
         }
-
-        // --- EMAIL UPDATE LOGIC REMOVED ENTIRELY ---
         
-        if (!profileUpdated) {
-            return res.status(200).json({ message: 'No changes detected.' });
-        }
+        console.log('✅ Profile updated successfully:', data);
         
         return res.status(200).json({ message: 'Profile updated successfully.' });
 
