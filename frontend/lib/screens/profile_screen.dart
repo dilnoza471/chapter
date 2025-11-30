@@ -81,7 +81,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await _authService.updateProfile(
         firstName: firstName,
         lastName: lastName,
-        studentId: studentId,
       );
       
       await _fetchProfile();
