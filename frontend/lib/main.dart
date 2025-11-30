@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/screens/catalog_page.dart';
 import 'package:frontend/screens/id_entry_screen.dart';
 import 'package:frontend/screens/add_book_screen.dart'; // NEW IMPORT
+import 'package:frontend/theme/app_colors.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/theme/theme_controller.dart';
 import 'package:frontend/screens/MyBorrowingsScreen.dart';
@@ -14,13 +15,13 @@ import 'package:frontend/screens/favorites_screen.dart';
 
 ThemeController themeController = ThemeController();
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-WidgetsFlutterBinding.ensureInitialized();
-  
   // Initialize Supabase
   await Supabase.initialize(
     url: 'https://dyxbxwhgsnfysrdgalzq.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eGJ4d2hnc25meXNyZGdhbHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTkyNDI5NDYsImV4cCI6MTgzMjEwMDU0Nn0.X0dTWCVr-yY_hZoHH1x3O6p8UXx7Z-8c8v8F6N9K4Aw',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eGJ4d2hnc25meXNyZGdhbHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTkyNDI5NDYsImV4cCI6MTgzMjEwMDU0Nn0.X0dTWCVr-yY_hZoHH1x3O6p8UXx7Z-8c8v8F6N9K4Aw',
   );
 
   runApp(const MyApp());
@@ -86,7 +87,7 @@ class _MyAppState extends State<MyApp> {
         return MaterialApp(
           title: 'Library Management System',
           theme: AppTheme.lightTheme,
-          themeMode: themeController.mode, 
+          themeMode: themeController.mode,
           home: homeWidget,
 
           routes: {
@@ -115,7 +116,8 @@ class MyAppHome extends StatefulWidget {
 
 class _MyAppHomeState extends State<MyAppHome> {
   int _selectedIndex = 0;
-  late final List<Widget> _pages;
+  String? _pendingIsbn;
+  late List<Widget> _pages;
   late final List<BottomNavigationBarItem> _navItems;
 
   @override
@@ -143,36 +145,154 @@ class _MyAppHomeState extends State<MyAppHome> {
     } else {
       // LIBRARIAN NAVIGATION - NOW WITH ADD BOOK PAGE
       _pages = [
-        CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
-        IdEntryScreen(),
-        const AddBookScreen(), // NEW: Add Book Screen
+        CatalogPage(
+          userRole: widget.userRole,
+          onLogout: widget.onLogout,
+          onRequestBorrow: _handleRequestBorrow,
+        ),
+        IdEntryScreen(bookIsbn: _pendingIsbn),
+        const AddBookScreen(),
         ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
       ];
       _navItems = const [
         BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Catalog'),
         BottomNavigationBarItem(icon: Icon(Icons.add_box), label: 'Borrow'),
-        BottomNavigationBarItem(icon: Icon(Icons.library_add), label: 'Add Book'), // NEW
+        BottomNavigationBarItem(
+          icon: Icon(Icons.library_add),
+          label: 'Add Book',
+        ),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ];
       _selectedIndex = 1; // librarians start on Borrow page
     }
   }
 
+  // called from CatalogPage when BookDetailsPage requests opening Borrow tab
+  void _handleRequestBorrow(String isbn) {
+    setState(() {
+      _pendingIsbn = isbn;
+      _selectedIndex = 1; // Borrow tab index for librarians
+      // Rebuild pages so BorrowBookPage gets updated prefillIsbn
+      final isStudent = widget.userRole.toLowerCase() == 'student';
+      if (!isStudent) {
+        _pages = [
+          CatalogPage(
+            userRole: widget.userRole,
+            onLogout: widget.onLogout,
+            onRequestBorrow: _handleRequestBorrow,
+          ),
+          IdEntryScreen(bookIsbn: _pendingIsbn),
+          const AddBookScreen(),
+          ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
+        ];
+      }
+      // ensure selectedIndex remains valid after changing pages
+      _selectedIndex = _safeIndex(_selectedIndex);
+    });
+  }
+
+  int _safeIndex(int idx) {
+    if (_pages.isEmpty) return 0;
+    if (idx < 0) return 0;
+    if (idx >= _pages.length) return _pages.length - 1;
+    return idx;
+  }
+
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _selectedIndex = _safeIndex(index);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _pages.isEmpty
+          ? const SizedBox.shrink()
+          : _pages[_safeIndex(_selectedIndex)],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
+        currentIndex: _safeIndex(_selectedIndex),
         onTap: _onItemTapped,
         selectedItemColor: Theme.of(context).primaryColor,
         items: _navItems,
+      ),
+    );
+  }
+}
+
+class ModernNavBar extends StatelessWidget {
+  final int currentIndex;
+  final Function(int) onTap;
+  final List<BottomNavigationBarItem> items;
+
+  const ModernNavBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.foreground.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(items.length, (index) {
+          final item = items[index];
+          final bool selected = index == currentIndex;
+
+          return GestureDetector(
+            onTap: () => onTap(index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              decoration: BoxDecoration(
+                color: selected
+                    ? AppColors.primary.withOpacity(0.15)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconTheme.merge(
+                    data: IconThemeData(
+                      color: selected
+                          ? AppColors.primary
+                          : AppColors.foreground,
+                      size: 26,
+                    ),
+                    child: item.icon,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.label!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: selected
+                          ? AppColors.primary
+                          : AppColors.foreground.withOpacity(0.7),
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
       ),
     );
   }

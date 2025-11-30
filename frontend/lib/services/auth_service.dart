@@ -126,8 +126,7 @@ class AuthService {
   Future<void> updateProfile({
     required String firstName,
     required String lastName,
-    // Email field removed from signature
-    String? studentId,
+
   }) async {
     print('=== UPDATE PROFILE REQUEST ===');
 
@@ -143,10 +142,6 @@ class AuthService {
     final body = {
       'name': fullName,
     };
-    // Email field REMOVED from the body logic
-    if (studentId != null) {
-      body['student_id'] = studentId;
-    }
     
     try {
       final response = await http.put(
@@ -155,7 +150,7 @@ class AuthService {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode(body), // Only sends name and student_id
+        body: jsonEncode(body), 
       );
 
       print('Response status: ${response.statusCode}');

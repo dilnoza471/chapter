@@ -4,15 +4,18 @@ import 'dart:convert';
 import 'book_details_page.dart';
 import '../models/book_model.dart';
 import '../widgets/book_widget.dart';
+import '../theme/app_colors.dart';
 
 class CatalogPage extends StatefulWidget {
   final String userRole;
   final VoidCallback onLogout;
+  final void Function(String isbn)? onRequestBorrow;
 
   const CatalogPage({
     super.key,
     required this.userRole,
     required this.onLogout,
+    this.onRequestBorrow,
   });
 
   @override
@@ -42,7 +45,7 @@ class _CatalogPageState extends State<CatalogPage> {
 
   void _filterBooks() {
     final query = _searchController.text.toLowerCase().trim();
-    
+
     setState(() {
       if (query.isEmpty) {
         filteredBooks = books;
@@ -93,7 +96,7 @@ class _CatalogPageState extends State<CatalogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -101,41 +104,39 @@ class _CatalogPageState extends State<CatalogPage> {
             floating: true,
             pinned: true,
             expandedHeight: 120,
-            backgroundColor: const Color(0xFF1E88E5),
+            backgroundColor: AppColors.primary,
             elevation: 0,
             actions: [
               Container(
                 margin: const EdgeInsets.only(right: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: AppColors.primaryForeground.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.logout, color: Colors.white),
+                  icon: Icon(Icons.logout, color: AppColors.primaryForeground),
                   onPressed: widget.onLogout,
                   tooltip: 'Logout (${widget.userRole})',
                 ),
               ),
+              Text(
+                widget.userRole,
+                style: TextStyle(color: AppColors.primaryForeground),
+              ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-              title: const Text(
+              title: Text(
                 'Library Catalog',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.primaryForeground,
                   fontWeight: FontWeight.bold,
                   fontSize: 24,
                   letterSpacing: 0.5,
                 ),
               ),
               background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
-                  ),
-                ),
+                decoration: BoxDecoration(color: AppColors.primary),
               ),
             ),
           ),
@@ -146,10 +147,10 @@ class _CatalogPageState extends State<CatalogPage> {
             ),
           ),
           if (isLoading)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               child: Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E88E5)),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
               ),
             )
@@ -159,17 +160,17 @@ class _CatalogPageState extends State<CatalogPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
-                      color: Color(0xFFE53935),
+                      color: AppColors.destructive,
                       size: 64,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       errorMessage!,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFFE53935),
+                      style: TextStyle(
+                        color: AppColors.destructive,
                         fontSize: 16,
                       ),
                     ),
@@ -187,7 +188,7 @@ class _CatalogPageState extends State<CatalogPage> {
                       _searchController.text.isNotEmpty
                           ? Icons.search_off
                           : Icons.library_books_outlined,
-                      color: const Color(0xFF90A4AE),
+                      color: AppColors.muted,
                       size: 64,
                     ),
                     const SizedBox(height: 16),
@@ -195,10 +196,7 @@ class _CatalogPageState extends State<CatalogPage> {
                       _searchController.text.isNotEmpty
                           ? 'No books match your search.'
                           : 'No books found.',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Color(0xFF90A4AE),
-                      ),
+                      style: TextStyle(fontSize: 18, color: AppColors.muted),
                     ),
                     if (_searchController.text.isNotEmpty) ...[
                       const SizedBox(height: 12),
@@ -227,14 +225,27 @@ class _CatalogPageState extends State<CatalogPage> {
                   return BookWidget(
                     book: filteredBooks[index],
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BookDetailsPage(
-                            book: filteredBooks[index],
+                      () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BookDetailsPage(
+                              book: filteredBooks[index],
+                              userRole: widget.userRole,
+                            ),
                           ),
-                        ),
-                      );
+                        );
+
+                        // If BookDetailsPage signalled we should open the Borrow tab,
+                        // propagate the ISBN to the app via the callback.
+                        if (result is Map &&
+                            result['action'] == 'openBorrow' &&
+                            result['isbn'] != null) {
+                          widget.onRequestBorrow?.call(
+                            result['isbn'] as String,
+                          );
+                        }
+                      }();
                     },
                   );
                 }, childCount: filteredBooks.length),
@@ -249,46 +260,39 @@ class _CatalogPageState extends State<CatalogPage> {
     return Container(
       height: 54,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E88E5).withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: const Color(0xFFE3F2FD), width: 1),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Row(
         children: [
           const SizedBox(width: 16),
-          const Icon(Icons.search_rounded, color: Color(0xFF1E88E5), size: 24),
+          Icon(Icons.search_rounded, color: AppColors.primary, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
               controller: _searchController,
-              decoration: const InputDecoration.collapsed(
+              decoration: InputDecoration.collapsed(
                 hintText: 'Search books, authors, categories...',
-                hintStyle: TextStyle(color: Color(0xFF90A4AE), fontSize: 15),
+                hintStyle: TextStyle(color: AppColors.muted, fontSize: 15),
               ),
-              style: const TextStyle(color: Color(0xFF263238), fontSize: 15),
+              style: TextStyle(color: AppColors.foreground, fontSize: 15),
             ),
           ),
           if (_searchController.text.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.clear, color: Color(0xFF90A4AE)),
+              icon: Icon(Icons.clear, color: AppColors.muted),
               onPressed: _clearSearch,
               tooltip: 'Clear',
             ),
           Container(
             margin: const EdgeInsets.only(right: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFE3F2FD),
+              color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
-              icon: const Icon(Icons.refresh, color: Color(0xFF1E88E5)),
+              icon: Icon(Icons.refresh, color: AppColors.primary),
               onPressed: fetchBooks,
               tooltip: 'Refresh',
             ),

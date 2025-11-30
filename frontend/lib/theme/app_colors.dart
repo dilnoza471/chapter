@@ -13,4 +13,6 @@ class AppColors {
   static Color destructive = const HSLColor.fromAHSL(1.0, 0, 0.84, 0.60).toColor();
   static Color border = const HSLColor.fromAHSL(1.0, 186, 0.20, 0.88).toColor();
   static Color input = const HSLColor.fromAHSL(1.0, 186, 0.20, 0.90).toColor();
+
+  static Color? muted;
 }

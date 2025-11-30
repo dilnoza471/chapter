@@ -13,7 +13,10 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/gradient_button.dart';
 
 class IdEntryScreen extends StatefulWidget {
-  const IdEntryScreen({super.key});
+  // accept optional incoming ISBN so the Book ID field can be pre-filled
+  final String? bookIsbn;
+
+  const IdEntryScreen({super.key, this.bookIsbn});
 
   @override
   State<IdEntryScreen> createState() => _IdEntryScreenState();
@@ -21,23 +24,33 @@ class IdEntryScreen extends StatefulWidget {
 
 class _IdEntryScreenState extends State<IdEntryScreen> {
   final _studentIdController = TextEditingController();
-  final _bookIdController = TextEditingController();
+  final _bookIsbnController = TextEditingController();
   String _studentIdError = '';
-  String _bookIdError = '';
+  String _bookIsbnError = '';
 
   @override
   void dispose() {
     _studentIdController.dispose();
-    _bookIdController.dispose();
+    _bookIsbnController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // prefill book/ISBN field if provided
+    if (widget.bookIsbn != null && widget.bookIsbn!.isNotEmpty) {
+      _bookIsbnController.text = widget.bookIsbn!.trim();
+    }
   }
 
   String _validateNumber(String value, String fieldName) {
     if (value.isEmpty) {
       return '$fieldName is required';
     }
-    if (!RegExp(r'^\d+$').hasMatch(value)) {
-      return '$fieldName must contain only numbers';
+    // allow ISBN-ish values: digits, hyphens and 'X' (ISBN10)
+    if (!RegExp(r'^[\d\-Xx]+$').hasMatch(value)) {
+      return '$fieldName must be a valid ISBN (digits, hyphens, or X)';
     }
     return '';
   }
@@ -49,16 +62,16 @@ class _IdEntryScreenState extends State<IdEntryScreen> {
         _studentIdController.text,
         'Student ID',
       );
-      _bookIdError = _validateNumber(_bookIdController.text, 'Book ID');
+      _bookIsbnError = _validateNumber(_bookIsbnController.text, 'Book ID');
     });
 
-    if (_studentIdError.isEmpty && _bookIdError.isEmpty) {
+    if (_studentIdError.isEmpty && _bookIsbnError.isEmpty) {
       final response = await http.post(
         Uri.parse('$baseUrl/borrow'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           // send the actual text and numeric student_id
-          'book_isbn': _bookIdController.text.trim(),
+          'book_isbn': _bookIsbnController.text.trim(),
           'student_id': int.parse(_studentIdController.text.trim()),
         }),
       );
@@ -74,13 +87,13 @@ class _IdEntryScreenState extends State<IdEntryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'IDs submitted successfully!\nStudent ID: ${_studentIdController.text}, Book ID: ${_bookIdController.text}',
+            'IDs submitted successfully!\nStudent ID: ${_studentIdController.text}, Book ID: ${_bookIsbnController.text}',
           ),
           backgroundColor: AppColors.primary,
         ),
       );
       print(
-        'Submitted: Student ID: ${_studentIdController.text}, Book ID: ${_bookIdController.text}',
+        'Submitted: Student ID: ${_studentIdController.text}, Book ID: ${_bookIsbnController.text}',
       );
     }
   }
@@ -148,14 +161,14 @@ class _IdEntryScreenState extends State<IdEntryScreen> {
                         ),
                         const SizedBox(height: AppSpacing.formSpacing),
                         CustomTextField(
-                          controller: _bookIdController,
-                          hintText: 'Enter book ID',
-                          labelText: 'Book ID',
+                          controller: _bookIsbnController,
+                          hintText: 'Enter book ISBN',
+                          labelText: 'Book ISBN',
                           labelIcon: Icons.menu_book,
-                          errorText: _bookIdError,
+                          errorText: _bookIsbnError,
                           onChanged: (value) {
                             setState(() {
-                              _bookIdError = '';
+                              _bookIsbnError = '';
                             });
                           },
                         ),
