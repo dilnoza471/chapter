@@ -4,7 +4,7 @@ import 'package:frontend/screens/id_entry_screen.dart';
 import 'package:frontend/screens/add_book_screen.dart'; // NEW IMPORT
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/theme/theme_controller.dart';
-import 'package:frontend/screens/my_borrowings_screen.dart';
+import 'package:frontend/screens/MyBorrowingsScreen.dart';
 import 'package:frontend/screens/profile_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/screens/login_screen.dart';
@@ -126,7 +126,7 @@ class _MyAppHomeState extends State<MyAppHome> {
     if (isStudent) {
       _pages = [
         CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
-        const MyBorrowingsScreen(),
+        MyBorrowingsScreen(studentId: Supabase.instance.client.auth.currentUser!.id),
         const FavoritesScreen(),
         ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
       ];
