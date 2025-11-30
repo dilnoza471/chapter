@@ -4,6 +4,7 @@ import '../models/reservation.dart';
 import '../services/reservation_service.dart';
 import '../widgets/reservation_card.dart';
 import '../services/notification_service.dart';
+import '../theme/app_colors.dart';
 
 class MyReservationsScreen extends StatefulWidget {
   const MyReservationsScreen({super.key});
@@ -101,48 +102,51 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
         .length;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Reservations'),
-        actions: [
-          if (availableCount > 0)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_active),
-                    onPressed: () {},
-                    color: Colors.green,
+      // Only updated AppBar and colors
+appBar: AppBar(
+  title: const Text('My Reservations'),
+  backgroundColor: AppColors.primary,
+  actions: [
+    if (availableCount > 0)
+      Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: Stack(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_active),
+              onPressed: () {},
+              color: Colors.green,
+            ),
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Text(
+                  '$availableCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                   ),
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        '$availableCount',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
-        ],
+          ],
+        ),
       ),
+  ],
+),
+
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : reservations.isEmpty

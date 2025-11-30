@@ -4,6 +4,8 @@ import '../models/loan.dart';
 import '../services/borrowing_service.dart';
 import '../widgets/borrowing_card.dart';
 import '../services/notification_service.dart';
+import '../screens/MyReservationsScreen.dart';
+import '../theme/app_colors.dart';
 
 class MyBorrowingsScreen extends StatefulWidget {
   const MyBorrowingsScreen({super.key});
@@ -71,6 +73,7 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Borrowings'),
+        backgroundColor: AppColors.primary,
         actions: [
           if (overDueCount > 0)
             Padding(
@@ -80,15 +83,15 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen> {
                   IconButton(
                     icon: const Icon(Icons.warning_amber_rounded),
                     onPressed: () {},
-                    color: Colors.red,
+                    color: AppColors.destructive,
                   ),
                   Positioned(
                     right: 8,
                     top: 8,
                     child: Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
+                      decoration: BoxDecoration(
+                        color: AppColors.destructive,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(
@@ -97,8 +100,8 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen> {
                       ),
                       child: Text(
                         '$overDueCount',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: AppColors.primaryForeground,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -109,6 +112,18 @@ class _MyBorrowingsScreenState extends State<MyBorrowingsScreen> {
                 ],
               ),
             ),
+            IconButton(
+      icon: const Icon(Icons.bookmark),
+      tooltip: 'My Reservations',
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MyReservationsScreen(),
+          ),
+        );
+      },
+    ),
         ],
       ),
       body: isLoading
