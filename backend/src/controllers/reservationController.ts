@@ -1,14 +1,30 @@
 import { Request, Response } from "express";
-import { getReservationsByUser, cancelReservation } from "../services/reservationService.js";
+import {
+  getReservationsByUser,
+  cancelReservation,
+  addReservation,
+} from "../services/reservationService.js";
 
 export async function getUserReservations(req: Request, res: Response) {
   try {
-    const userId = Number(req.params.userId);
-    if (!userId) return res.status(400).json({ error: "Invalid user ID" });
+    const studentId = Number(req.params.studentId);
+    if (!studentId) return res.status(400).json({ error: "Invalid user ID" });
 
-    const reservations = await getReservationsByUser(userId);
+    const reservations = await getReservationsByUser(studentId);
     return res.json(reservations);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+}
 
+export async function addUserReservation(req: Request, res: Response) {
+  try {
+    const { bookIsbn, studentId } = req.body;
+    if (!bookIsbn || !studentId) {
+      return res.status(400).json({ error: "Missing book ISBN or student ID" });
+    }
+    await addReservation(bookIsbn, studentId);
+    return res.status(201).json({ message: "Reservation added" });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
@@ -21,7 +37,6 @@ export async function cancelUserReservation(req: Request, res: Response) {
 
     await cancelReservation(reservationId);
     return res.json({ message: "Reservation cancelled" });
-
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }

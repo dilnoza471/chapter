@@ -21,11 +21,6 @@ void main() async {
 
   final notificationService = NotificationService();
   await notificationService.initialize();
-  await notificationService.scheduleBookDueReminder(
-  bookTitle: 'Flutter Book',
-  dueDate: DateTime.now().add(const Duration(seconds: 10)), // 10 seconds later
-  notificationId: 1,
-);
 
   // Initialize Supabase
   await Supabase.initialize(
@@ -221,41 +216,41 @@ class _MyAppHomeState extends State<MyAppHome> {
           ? const SizedBox.shrink()
           : _pages[_safeIndex(_selectedIndex)],
       floatingActionButton: FloatingActionButton(
-      backgroundColor: AppColors.primary,
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-        );
-      },
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          const Icon(Icons.notifications),
-          Positioned(
-            right: -1,
-            top: -1,
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: AppColors.destructive,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-              child: const Text(
-                '3', // TODO: replace with dynamic count
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+        backgroundColor: AppColors.primary,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+          );
+        },
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.notifications),
+            Positioned(
+              right: -1,
+              top: -1,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: AppColors.destructive,
+                  shape: BoxShape.circle,
                 ),
-                textAlign: TextAlign.center,
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                child: const Text(
+                  '3', // TODO: replace with dynamic count
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _safeIndex(_selectedIndex),
         onTap: _onItemTapped,

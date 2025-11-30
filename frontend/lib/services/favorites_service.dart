@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class FavoritesService {
   final String baseUrl =
-      'https://chapter-djfj.onrender.com/api/favorites'; // Change to your backend URL
+      'https://chapter-djfj.onrender.com/favorites'; // Change to your backend URL
   final supabase = Supabase.instance.client;
 
   Future<String> _getAuthToken() async {

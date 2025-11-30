@@ -18,21 +18,18 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
   final notificationService = NotificationService();
   late ReservationService reservationService;
   bool isLoading = true;
-  String studentId = '';
+  String studentId = AuthService().currentStudentId as String;
   @override
   void initState() {
     super.initState();
     // Initialize the service with your backend URL
-    reservationService = ReservationService(
-      baseUrl: 'https://chapter-djfj.onrender.com',
-    );
+    reservationService = ReservationService();
     _loadReservations();
   }
 
   Future<void> _loadReservations() async {
     setState(() => isLoading = true);
     try {
-      studentId = await AuthService().getStudentId();
       final fetchedReservations = await reservationService
           .getReservationsByStudent(studentId);
       setState(() {
@@ -62,8 +59,8 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Yes, Cancel'),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Yes, Cancel'),
           ),
         ],
       ),
@@ -103,49 +100,49 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
 
     return Scaffold(
       // Only updated AppBar and colors
-appBar: AppBar(
-  title: const Text('My Reservations'),
-  backgroundColor: AppColors.primary,
-  actions: [
-    if (availableCount > 0)
-      Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: Stack(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.notifications_active),
-              onPressed: () {},
-              color: Colors.green,
-            ),
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(
-                  color: Colors.green,
-                  shape: BoxShape.circle,
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
-                child: Text(
-                  '$availableCount',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+      appBar: AppBar(
+        title: const Text('My Reservations'),
+        backgroundColor: AppColors.primary,
+        actions: [
+          if (availableCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_active),
+                    onPressed: () {},
+                    color: Colors.green,
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '$availableCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+        ],
       ),
-  ],
-),
 
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

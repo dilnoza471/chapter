@@ -119,10 +119,6 @@ class _CatalogPageState extends State<CatalogPage> {
                   tooltip: 'Logout (${widget.userRole})',
                 ),
               ),
-              Text(
-                widget.userRole,
-                style: TextStyle(color: AppColors.primaryForeground),
-              ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.only(left: 20, bottom: 16),

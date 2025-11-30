@@ -1,133 +1,316 @@
-# Software Requirements Specification
+Software Requirements Specification (SRS)
 
-**Project Name:** Library Management System (LMS)
+Project Name: Library Management System (LMS)
+Version: 1.0
+Prepared by: Project Team (PM: Dilnoza)
 
-**Version:** 1.0
+1. Introduction
+   1.1 Purpose
 
-**Prepared by:** Project Team (PM: Dilnoza)
+This document defines the full functional and non-functional requirements of the Library Management System (LMS). It serves as the primary reference for developers, testers, and stakeholders.
 
----
+1.2 Scope
 
-## **1. Introduction**
+The LMS consists of:
 
-### **1.1 Purpose**
+Librarian Platform (Web/Desktop): Catalog management, borrow/return tracking, and posting updates.
 
-This document defines the functional and non-functional requirements of the Library Management System. It will guide the design, development, and validation of both the librarian and student applications.
+Student Mobile App (Android/iOS): Browsing catalog, tracking borrowed books, receiving notifications, submitting requests.
 
-### **1.2 Scope**
+Initial release (MVP) focuses on manual operations. Automation (barcode/RFID) will be added in future versions.
 
-The LMS will consist of:
+1.3 Definitions
 
-- **Librarian Platform (Web/Desktop):** For managing the catalog, recording book transactions, and publishing updates.
-- **Student Mobile App (Android/iOS):** For browsing books, viewing history, managing borrowed items, and receiving notifications.
+Librarian: Authorized user who manages library data.
 
-Initial version (MVP) focuses on manual operations and core features. Automation with RFID/barcodes may be implemented later.
+Student: Registered mobile app user.
 
-### **1.3 Definitions**
+Book Record: Metadata including title, author, category, availability, and borrower info.
 
-- **Librarian:** Authorized user who manages the library database.
-- **Student:** Registered user who accesses library info through the app.
-- **Book Record:** Entry containing book metadata, availability, and borrower details.
+2. Overall Description
+   2.1 Product Perspective
 
----
+Client-server system with shared backend.
+Mobile and web apps interact with the backend API connected to a relational database (PostgreSQL).
 
-## **2. Overall Description**
+2.2 Product Functions
 
-### **2.1 Product Perspective**
+Manage book inventory
 
-The LMS is an independent client-server system.
+Track borrow/return operations
 
-Frontend apps (web and mobile) interact with a shared backend API connected to a relational database.
+Notify users
 
-### **2.2 Product Functions**
+Allow extension requests
 
-- Manage book inventory
-- Track borrowed and returned books
-- Notify users of updates and status changes
-- Allow students to request loan extensions
-- Provide insights on popular and new books
+Provide insights on library activity
 
-### **2.3 User Characteristics**
+2.3 User Characteristics
+User Description Access
+Librarian Basic computer literacy Full CRUD on books; manage borrow/return; manage requests
+Student Basic smartphone familiarity Browse catalog; limited account actions; request extensions
+2.4 Constraints
 
-| User | Description | Access |
-| --- | --- | --- |
-| Librarian | Basic computer literacy | Full CRUD operations on books, manage requests |
-| Student | Basic smartphone literacy | Read-only access to catalog, limited account actions |
+Requires internet access
 
-### **2.4 Constraints**
+Manual input from librarian
 
-- Manual data entry by librarian.
-- Requires stable internet connection.
-- Mobile notifications depend on Firebase availability.
-- Single admin account for MVP.
+Notifications depend on FCM availability
 
-### **2.5 Assumptions & Dependencies**
+Only one admin account for MVP
 
-- Librarian will maintain accurate data.
-- System depends on backend server uptime.
-- Students must be registered users to use the app.
+2.5 Assumptions & Dependencies
 
----
+Librarian must maintain accurate records
 
-## **3. System Features**
+System depends on backend server uptime
 
-### **3.1 Librarian Platform**
+Students must be registered
 
-| Feature | Description | Priority |
-| --- | --- | --- |
-| Add/Update/Delete Book | Manage catalog entries with title, author, category, availability | High |
-| Record Borrow/Return | Update book status manually | High |
-| Approve/Reject Extension Requests | Manage student requests to extend due date | High |
-| Post News/Updates | Publish notices or announcements visible in app | Medium |
-| View Statistics | See most borrowed books, total transactions | Medium |
+3. System Requirements
+   3.1 System Requirements (Mobile App)
 
----
+Minimum Android SDK: API 26 (Android 8.0+)
 
-### **3.2 Student Mobile App**
+Minimum iOS version: iOS 14+
 
-| Feature | Description | Priority |
-| --- | --- | --- |
-| Browse Catalog | View all books and availability status | High |
-| Search Books | Search by title, author, or category | High |
-| View Loan History | See borrowed and returned books | High |
-| Request Extension | Ask librarian for due date extension | High |
-| Subscribe to Book | Get notified when unavailable book becomes available | Medium |
-| Favorites | Save preferred books | Medium |
-| Feed Page | View popular and new arrivals, and librarian updates | Medium |
-| Notifications | Receive alerts about book updates or requests | High |
+Required permissions:
 
----
+Internet
 
-## **4. Non-Functional Requirements**
+Push notifications
 
-| Category | Requirement |
-| --- | --- |
-| **Performance** | App should respond within 2 seconds for standard queries. |
-| **Scalability** | Backend should support up to 500 student users initially. |
-| **Security** | Login required for both users. Passwords stored securely (hashed). |
-| **Usability** | Simple UI suitable for non-technical users. |
-| **Compatibility** | Android 8+ / iOS 14+ / modern browsers for web. |
-| **Maintainability** | Modular code structure; proper documentation. |
-| **Reliability** | 99% uptime on hosted backend. |
-| **Data Integrity** | Prevent inconsistent updates between client and server. |
+Storage: ≥50MB
 
----
+Minimum RAM: 2GB
 
-## **5. Database Requirements**
+3.2 System Requirements (Web/Desktop – Librarian Platform)
 
-Basic tables:
+Supported browsers: Chrome, Firefox, Edge, Safari (latest)
 
-- **Users (id, name, role, email, password)**
-- **Books (id, title, author, category, available_count, total_count)**
-- **BorrowRecords (id, user_id, book_id, issue_date, due_date, return_date, status)**
-- **Notifications (id, user_id, type, message, created_at)**
-- **News (id, title, content, date)**
+OS support: Windows 10+, macOS 11+, Ubuntu 20.04+
 
----
+Internet: minimum 5 Mbps
 
-## **6. Future Enhancements**
+3.3 Hardware Requirements
 
-- Barcode/RFID integration for book scanning.
-- Multi-role librarian accounts.
-- Recommendation system for students.
-- Detailed analytics and reporting dashboard.
+Smartphone with working internet
+
+Push notification capability
+
+Optional future hardware:
+
+Barcode scanner
+
+RFID reader
+
+4. Requirements Catalogue
+   4.1 Functional Requirements (FR)
+   FR-1: Add Book
+
+Actor: Librarian
+
+Description: Librarian adds a new book with title, author, category, and quantity.
+
+Preconditions: Librarian is logged in.
+
+Postconditions: Book record is stored; catalog updates.
+
+FR-2: Update Book
+
+Actor: Librarian
+
+Description: Modify book details or stock count.
+
+Postconditions: Updated record replaces old one.
+
+FR-3: Delete Book
+
+Actor: Librarian
+
+Description: Remove book from catalog when no active borrow records exist.
+
+Postconditions: Book is no longer visible to students.
+
+FR-4: Record Borrow Transaction
+
+Actor: Librarian
+
+Inputs: Student ID, book ID, due date
+
+Preconditions: Book availability > 0
+
+Postconditions: Availability decreases; borrow record created.
+
+FR-5: Record Return Transaction
+
+Actor: Librarian
+
+Preconditions: Borrow record exists
+
+Postconditions: Availability increases; record marked "returned."
+
+FR-6: Browse Catalog
+
+Actor: Student
+
+Description: View list of available books with search and filters.
+
+Output: Titles, authors, categories, availability.
+
+FR-7: View Loan History
+
+Actor: Student
+
+Description: Student sees all borrowed, returned, overdue books.
+
+FR-8: Request Due-Date Extension
+
+Actor: Student
+
+Description: Submit a request for more time.
+
+Postconditions: Request stored; librarian notified.
+
+FR-9: Approve/Reject Extension
+
+Actor: Librarian
+
+Postconditions: Borrow record updated; student notified via push notification.
+
+FR-10: Subscribe to Book
+
+Actor: Student
+
+Description: Student gets notified when an unavailable book becomes available.
+
+Postconditions: Subscription stored.
+
+FR-11: Favorites
+
+Actor: Student
+
+Description: Save books to personal favorites list.
+
+FR-12: View Feed
+
+Actors: Students
+
+Description: Shows new arrivals, popular books, and updates/news posted by librarian.
+
+FR-13: Post News/Updates
+
+Actor: Librarian
+
+Description: Publish an announcement visible in student feed.
+
+FR-14: Notifications
+
+Actor: System
+
+Triggers: Extension decisions, book availability, news, overdue reminders.
+
+4.2 Non-Functional Requirements (NFR)
+NFR-1: Performance
+
+API responses must return within ≤2 seconds under normal load.
+
+NFR-2: Scalability
+
+System must support up to 500 student users in initial deployment.
+
+NFR-3: Security
+
+JWT-based authentication.
+
+Passwords stored as salted hashes.
+
+NFR-4: Usability
+
+UI must be simple and suitable for non-technical users.
+
+NFR-5: Compatibility
+
+Runs on Android 8+, iOS 14+, and major modern browsers.
+
+NFR-6: Maintainability
+
+Codebase must follow modular architecture and be properly documented.
+
+NFR-7: Reliability
+
+Backend must maintain 99% uptime during academic terms.
+
+NFR-8: Data Integrity
+
+No inconsistent updates allowed (e.g., preventing double borrows).
+
+5. Database Requirements
+   Core Tables
+
+Users (id, name, role, email, password_hash)
+
+Books (id, title, author, category, available_count, total_count)
+
+BorrowRecords (id, user_id, book_id, issue_date, due_date, return_date, status)
+
+Notifications (id, user_id, type, message, created_at)
+
+News (id, title, content, date_created)
+
+6. Future Enhancements
+
+Barcode/RFID integration
+
+Multi-librarian roles
+
+Recommendation engine
+
+Full analytics dashboard
+
+Book reservation system
+
+7. Project Overview (Merged Section)
+   7.1 Summary
+
+LMS will offer two applications:
+
+Librarian Web/Desktop for management
+
+Student Mobile App for browsing and interacting with library services
+
+7.2 Objectives
+
+Digitize library workflows
+
+Improve communication
+
+Provide easy access to book info
+
+Prepare for future automation
+
+7.3 Tech Stack
+
+Frontend: Flutter (mobile), web for librarian
+
+Backend: Spring Boot or Node.js
+
+Database: PostgreSQL
+
+Notifications: Firebase Cloud Messaging
+
+Version Control: GitHub
+
+7.4 Scope Limitations
+
+Manual operations only
+
+One librarian account
+
+Notifications only via mobile app
+
+No barcode scanning yet
+
+7.5 Team Structure
+
+(You can fill your names/roles here.)

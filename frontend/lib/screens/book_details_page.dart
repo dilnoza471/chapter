@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'dart:ui';
 import 'package:intl/intl.dart';
 import '../models/book_model.dart';
 import '../widgets/favorite_heart_icon.dart';
-
+import '../services/reservation_service.dart';
 class BookDetailsPage extends StatelessWidget {
   final BookModel book;
   // role of the currently signed-in user (defaults to student -> hides borrow button)
@@ -257,7 +258,7 @@ class BookDetailsPage extends StatelessWidget {
                   // Borrow Button (only visible to librarians)
                   if (userRole.toLowerCase() == 'librarian')
                     _buildGlassyButton(
-                      // Instead of pushing a new screen, send a result back to the caller
+                      //send a result back to the caller
                       // telling it to switch to the Borrow tab and prefill ISBN.
                       onPressed: book.isAvailable
                           ? () {
@@ -290,6 +291,33 @@ class BookDetailsPage extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                  // Reserve Button (only visible to students when NOT available)
+                  if (userRole.toLowerCase() == 'student' && !book.isAvailable)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: _buildGlassyButton(
+                        onPressed: () async {
+                          await ReservationService().makeReservation(bookIsbn: book.isbn, studentId: AuthService().currentStudentId as int);
+                          
+                          Navigator.pop(context, {});
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.bookmark_add, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text(
+                              'Reserve This Book',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   const SizedBox(height: 20),

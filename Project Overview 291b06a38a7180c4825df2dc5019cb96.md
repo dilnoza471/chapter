@@ -71,6 +71,3 @@ The system aims to streamline library processes and improve user engagement whil
 - Book reservation or hold system.
 - AI-based book recommendation engine (because apparently everything needs AI now).
 
----
-
-### **7. Team Structure**

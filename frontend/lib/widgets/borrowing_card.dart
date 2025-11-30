@@ -5,7 +5,7 @@ import '../theme/app_colors.dart';
 class BorrowingCard extends StatelessWidget {
   final Loan borrowing;
 
-  const BorrowingCard({Key? key, required this.borrowing}) : super(key: key);
+  const BorrowingCard({super.key, required this.borrowing});
 
   @override
   Widget build(BuildContext context) {
