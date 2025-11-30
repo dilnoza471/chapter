@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../models/book_model.dart';
 import '../widgets/favorite_heart_icon.dart';
 import '../services/reservation_service.dart';
+
 class BookDetailsPage extends StatelessWidget {
   final BookModel book;
   // role of the currently signed-in user (defaults to student -> hides borrow button)
@@ -299,8 +300,12 @@ class BookDetailsPage extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 8.0),
                       child: _buildGlassyButton(
                         onPressed: () async {
-                          await ReservationService().makeReservation(bookIsbn: book.isbn, studentId: AuthService().currentStudentId as int);
-                          
+                          String studentId = await AuthService().getStudentId();
+                          await ReservationService().makeReservation(
+                            bookIsbn: book.isbn,
+                            studentId: int.parse(studentId),
+                          );
+
                           Navigator.pop(context, {});
                         },
                         child: Row(

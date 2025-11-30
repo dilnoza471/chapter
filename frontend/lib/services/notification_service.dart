@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/models/notification_model.dart';
-import 'package:frontend/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -14,11 +13,13 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   // Replace with your backend base URL
-  final String _baseUrl = 'https://chapter-djfj.onrender.com/api/notifications';
+  final String _baseUrl = 'https://chapter-djfj.onrender.com/notifications';
 
   /// ------------------- Local Notifications -------------------
   Future<void> initialize() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -86,7 +87,9 @@ class NotificationService {
 
   /// ------------------- Backend Notifications -------------------
 
-  Future<List<NotificationModel>> getNotificationsByStudent(String studentId) async {
+  Future<List<NotificationModel>> getNotificationsByStudent(
+    String studentId,
+  ) async {
     final response = await http.get(Uri.parse('$_baseUrl/$studentId'));
 
     if (response.statusCode == 200) {
@@ -98,7 +101,9 @@ class NotificationService {
   }
 
   Future<void> markAsRead(int notificationId) async {
-    final response = await http.post(Uri.parse('$_baseUrl/$notificationId/read'));
+    final response = await http.post(
+      Uri.parse('$_baseUrl/$notificationId/read'),
+    );
 
     if (response.statusCode != 200) {
       throw Exception('Failed to mark notification as read');

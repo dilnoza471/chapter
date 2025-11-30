@@ -1,27 +1,30 @@
 import 'book_model.dart';
 
 class Reservation {
-  final String id;
+  final int id;
+  final int studentId;
   final BookModel book;
-  final DateTime reservationDate;
+  final DateTime reservedAt;
+  final DateTime expiresAt;
   final String status;
-  final int queuePosition;
 
   Reservation({
     required this.id,
+    required this.studentId,
     required this.book,
-    required this.reservationDate,
+    required this.reservedAt,
+    required this.expiresAt,
     required this.status,
-    this.queuePosition = 1,
   });
 
   factory Reservation.fromJson(Map<String, dynamic> json) {
     return Reservation(
-      id: json['id'],
+      id: json['id'] as int,
+      studentId: json['student_id'] as int,
       book: BookModel.fromJson(json['book']),
-      reservationDate: DateTime.parse(json['reservationDate']),
+      reservedAt: DateTime.parse(json['reserved_at']),
+      expiresAt: DateTime.parse(json['expires_at']),
       status: json['status'],
-      queuePosition: json['queuePosition'] ?? 1,
     );
   }
 }

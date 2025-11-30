@@ -18,7 +18,7 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
   final notificationService = NotificationService();
   late ReservationService reservationService;
   bool isLoading = true;
-  String studentId = AuthService().currentStudentId as String;
+  String studentId = '';
   @override
   void initState() {
     super.initState();
@@ -29,6 +29,7 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
 
   Future<void> _loadReservations() async {
     setState(() => isLoading = true);
+    studentId = await AuthService().getStudentId();
     try {
       final fetchedReservations = await reservationService
           .getReservationsByStudent(studentId);
@@ -68,7 +69,7 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
 
     if (confirmed == true) {
       try {
-        await reservationService.cancelReservation(reservation.id);
+        await reservationService.cancelReservation(reservation.id as String);
         setState(() {
           reservations.removeWhere((r) => r.id == reservation.id);
         });

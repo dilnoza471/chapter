@@ -74,12 +74,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       final notif = _notifications[index];
                       return Card(
                         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        color: notif.isRead! ? Colors.grey[100] : Colors.white,
+                        color: notif.isRead ? Colors.grey[100] : Colors.white,
                         child: ListTile(
                           title: Text(
                             notif.title,
                             style: TextStyle(
-                              fontWeight: notif.isRead! ? FontWeight.normal : FontWeight.bold,
+                              fontWeight: notif.isRead ? FontWeight.normal : FontWeight.bold,
                               color: AppColors.foreground,
                             ),
                           ),
@@ -87,7 +87,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             notif.body,
                             style: TextStyle(color: AppColors.foreground),
                           ),
-                          trailing: notif.isRead!
+                          trailing: notif.isRead
                               ? null
                               : IconButton(
                                   icon: const Icon(Icons.mark_email_read, color: Colors.blue),
