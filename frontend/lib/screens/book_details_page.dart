@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:intl/intl.dart';
 import '../models/book_model.dart';
@@ -6,8 +7,14 @@ import '../widgets/favorite_heart_icon.dart';
 
 class BookDetailsPage extends StatelessWidget {
   final BookModel book;
+  // role of the currently signed-in user (defaults to student -> hides borrow button)
+  final String userRole;
 
-  const BookDetailsPage({super.key, required this.book});
+  const BookDetailsPage({
+    super.key,
+    required this.book,
+    this.userRole = 'student',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,17 +53,17 @@ class BookDetailsPage extends StatelessWidget {
               ),
             ),
             actions: [
-    Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: FavoriteHeartIcon(
-        bookIsbn: book.isbn,
-        initialIsFavorited: false,
-        onFavoriteChanged: () {
-          // Optionally refresh or update UI
-        },
-      ),
-    ),
-  ],
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: FavoriteHeartIcon(
+                  bookIsbn: book.isbn,
+                  initialIsFavorited: false,
+                  onFavoriteChanged: () {
+                    // Optionally refresh or update UI
+                  },
+                ),
+              ),
+            ],
 
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
@@ -214,7 +221,8 @@ class BookDetailsPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _buildInfoCard(
+                        child: _buildCopyableInfoCard(
+                          context: context,
                           icon: Icons.tag,
                           label: 'ISBN',
                           value: book.isbn,
@@ -246,46 +254,44 @@ class BookDetailsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Borrow Button
-                  _buildGlassyButton(
-                    onPressed: book.isAvailable
-                        ? () {
-                            // TODO: Implement borrow functionality
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Borrow functionality coming soon!',
-                                ),
-                                backgroundColor: Color(0xFF1E88E5),
-                              ),
-                            );
-                          }
-                        : null,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          book.isAvailable ? Icons.bookmark_add : Icons.block,
-                          color: book.isAvailable
-                              ? Colors.white
-                              : const Color(0xFF9E9E9E),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          book.isAvailable
-                              ? 'Borrow This Book'
-                              : 'Not Available',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                  // Borrow Button (only visible to librarians)
+                  if (userRole.toLowerCase() == 'librarian')
+                    _buildGlassyButton(
+                      // Instead of pushing a new screen, send a result back to the caller
+                      // telling it to switch to the Borrow tab and prefill ISBN.
+                      onPressed: book.isAvailable
+                          ? () {
+                              Navigator.pop(context, {
+                                'action': 'openBorrow',
+                                'isbn': book.isbn,
+                              });
+                            }
+                          : null,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            book.isAvailable ? Icons.bookmark_add : Icons.block,
                             color: book.isAvailable
                                 ? Colors.white
                                 : const Color(0xFF9E9E9E),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            book.isAvailable
+                                ? 'Borrow This Book'
+                                : 'Not Available',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: book.isAvailable
+                                  ? Colors.white
+                                  : const Color(0xFF9E9E9E),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -348,6 +354,63 @@ class BookDetailsPage extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCopyableInfoCard({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return GestureDetector(
+      onTap: () async {
+        await Clipboard.setData(ClipboardData(text: value));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('ISBN copied: $value'),
+              backgroundColor: const Color(0xFF43A047),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      },
+      child: _buildGlassyCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 20, color: const Color(0xFF1E88E5)),
+                const Spacer(),
+                Icon(
+                  Icons.content_copy,
+                  size: 16,
+                  color: const Color(0xFF1E88E5).withOpacity(0.6),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF90A4AE)),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF263238),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }

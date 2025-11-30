@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _baseUrl = 'http://127.0.0.1:5001/auth';
-const String _userBaseUrl = 'http://127.0.0.1:5001/users';
+const String _baseUrl = 'https://chapter-djfj.onrender.com/auth';
+const String _userBaseUrl = 'https://chapter-djfj.onrender.com/users';
 
 class AuthService {
   static const String _tokenKey = 'jwtToken';
@@ -16,7 +16,9 @@ class AuthService {
     if (_cachedToken != null) return _cachedToken;
     final prefs = await SharedPreferences.getInstance();
     _cachedToken = prefs.getString(_tokenKey);
-    print('📱 Retrieved token: ${_cachedToken != null ? "Token exists (${_cachedToken!.length} chars)" : "No token"}');
+    print(
+      '📱 Retrieved token: ${_cachedToken != null ? "Token exists (${_cachedToken!.length} chars)" : "No token"}',
+    );
     return _cachedToken;
   }
 
@@ -48,7 +50,7 @@ class AuthService {
   Future<String> login(String identifier, String password) async {
     print('=== LOGIN REQUEST ===');
     print('Identifier: $identifier');
-    
+
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/login'),
@@ -79,7 +81,7 @@ class AuthService {
 
   Future<Map<String, dynamic>> fetchUserProfile() async {
     print('=== FETCH PROFILE REQUEST ===');
-    
+
     final token = await getToken();
     if (token == null) {
       print('❌ No token found');
@@ -87,7 +89,9 @@ class AuthService {
     }
 
     print('📤 Making request to: $_userBaseUrl/me');
-    print('Token (first 30 chars): ${token.substring(0, token.length > 30 ? 30 : token.length)}...');
+    print(
+      'Token (first 30 chars): ${token.substring(0, token.length > 30 ? 30 : token.length)}...',
+    );
 
     try {
       final response = await http.get(
@@ -126,8 +130,8 @@ class AuthService {
   Future<void> updateProfile({
     required String firstName,
     required String lastName,
-    // Email field removed from signature
-    String? studentId,
+    // student_id is an integer in DB
+    int? studentId,
   }) async {
     print('=== UPDATE PROFILE REQUEST ===');
 
@@ -138,16 +142,13 @@ class AuthService {
     }
 
     final fullName = '$firstName $lastName';
-    
+
     // Build the request body with only name and student_id
-    final body = {
-      'name': fullName,
-    };
-    // Email field REMOVED from the body logic
+    final body = {'name': fullName};
     if (studentId != null) {
-      body['student_id'] = studentId;
+      body['student_id'] = studentId as String;
     }
-    
+
     try {
       final response = await http.put(
         Uri.parse('$_userBaseUrl/me'),
@@ -179,11 +180,11 @@ class AuthService {
     required String email,
     required String password,
     required String role,
-    String? studentId,
+    int? studentId,
   }) async {
     print('=== REGISTRATION REQUEST ===');
     print('Email: $email, Role: $role');
-    
+
     final body = {
       'firstname': firstName,
       'lastname': lastName,
@@ -192,8 +193,8 @@ class AuthService {
       'role': role,
     };
 
-    if (role == 'student' && studentId != null && studentId.isNotEmpty) {
-      body['student_id'] = studentId;
+    if (role == 'student' && studentId != null) {
+      body['student_id'] = studentId as String;
       print('Student ID: $studentId');
     }
 
@@ -217,7 +218,9 @@ class AuthService {
       } else if (response.statusCode == 202) {
         print('⚠️ Email confirmation required');
         final data = jsonDecode(response.body);
-        throw Exception(data['message'] ?? 'Please check your email for confirmation.');
+        throw Exception(
+          data['message'] ?? 'Please check your email for confirmation.',
+        );
       } else {
         final errorData = jsonDecode(response.body);
         print('❌ Registration failed: ${errorData['message']}');
@@ -231,7 +234,7 @@ class AuthService {
 
   Future<void> logout() async {
     print('=== LOGOUT REQUEST ===');
-    
+
     final token = await getToken();
     if (token == null) {
       print('No token to logout with');

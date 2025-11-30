@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/book_model.dart';
 import '../services/favorites_service.dart';
 
 class FavoriteHeartIcon extends StatefulWidget {
@@ -8,11 +7,11 @@ class FavoriteHeartIcon extends StatefulWidget {
   final VoidCallback? onFavoriteChanged;
 
   const FavoriteHeartIcon({
-    Key? key,
+    super.key,
     required this.bookIsbn,
     this.initialIsFavorited = false,
     this.onFavoriteChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<FavoriteHeartIcon> createState() => _FavoriteHeartIconState();

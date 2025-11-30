@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../models/book_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_spacing.dart';
@@ -9,7 +8,7 @@ import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
 
 class AddBookScreen extends StatefulWidget {
-  const AddBookScreen({Key? key}) : super(key: key);
+  const AddBookScreen({super.key});
 
   @override
   State<AddBookScreen> createState() => _AddBookScreenState();
@@ -26,13 +25,14 @@ class _AddBookScreenState extends State<AddBookScreen> {
   final _coverUrlController = TextEditingController();
   final _totalCopiesController = TextEditingController(text: '1');
   final _availableCopiesController = TextEditingController(text: '1');
-  
+
   DateTime _publicationDate = DateTime.now();
   bool _isLoading = false;
   bool _isSearching = false;
   String? _errorMessage;
 
-  final String _apiBaseUrl = 'http://localhost:5001'; // Change to your API URL
+  final String _apiBaseUrl =
+      'https://chapter-djfj.onrender.com'; // Change to your API URL
 
   @override
   void dispose() {
@@ -67,7 +67,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         setState(() {
           _titleController.text = data['title'] ?? '';
           _authorController.text = data['author'] ?? '';
@@ -75,9 +75,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
           _languageController.text = data['language'] ?? 'en';
           _categoryController.text = data['category'] ?? '';
           _coverUrlController.text = data['coverImageUrl'] ?? '';
-          
+
           // Parse publication date
-          if (data['publicationDate'] != null && data['publicationDate'].isNotEmpty) {
+          if (data['publicationDate'] != null &&
+              data['publicationDate'].isNotEmpty) {
             try {
               _publicationDate = DateTime.parse(data['publicationDate']);
             } catch (e) {
@@ -102,61 +103,61 @@ class _AddBookScreenState extends State<AddBookScreen> {
   }
 
   // Create book in database
- Future<void> _createBook() async {
-  if (!_formKey.currentState!.validate()) {
-    print('Form validation failed');
-    return;
-  }
-
-  setState(() {
-    _isLoading = true;
-    _errorMessage = null;
-  });
-
-  try {
-    final bookData = {
-      'isbn': _isbnController.text.trim(),
-      'title': _titleController.text.trim(),
-      'author': _authorController.text.trim(),
-      'description': _descriptionController.text.trim(),
-      'publicationDate': _publicationDate.toIso8601String(),
-      'language': _languageController.text.trim(),
-      'category': _categoryController.text.trim(),
-      'coverImageUrl': _coverUrlController.text.trim(),
-      'totalCopies': int.parse(_totalCopiesController.text),
-      'availableCopies': int.parse(_availableCopiesController.text),
-    };
-
-    print('Sending request to: $_apiBaseUrl/books');
-    print('Book data: $bookData');
-
-    final response = await http.post(
-      Uri.parse('$_apiBaseUrl/books'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(bookData),
-    );
-
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      _showSuccess('Book created successfully!');
-      _clearForm();
-      // Don't pop if testing standalone
-      // Navigator.pop(context, true);
-    } else {
-      final error = json.decode(response.body);
-      _showError(error['error'] ?? 'Failed to create book');
+  Future<void> _createBook() async {
+    if (!_formKey.currentState!.validate()) {
+      print('Form validation failed');
+      return;
     }
-  } catch (e) {
-    print('Error caught: $e');
-    _showError('Error: ${e.toString()}');
-  } finally {
+
     setState(() {
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final bookData = {
+        'isbn': _isbnController.text.trim(),
+        'title': _titleController.text.trim(),
+        'author': _authorController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'publicationDate': _publicationDate.toIso8601String(),
+        'language': _languageController.text.trim(),
+        'category': _categoryController.text.trim(),
+        'coverImageUrl': _coverUrlController.text.trim(),
+        'totalCopies': int.parse(_totalCopiesController.text),
+        'availableCopies': int.parse(_availableCopiesController.text),
+      };
+
+      print('Sending request to: $_apiBaseUrl/books');
+      print('Book data: $bookData');
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/books'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(bookData),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _showSuccess('Book created successfully!');
+        _clearForm();
+        // Don't pop if testing standalone
+        // Navigator.pop(context, true);
+      } else {
+        final error = json.decode(response.body);
+        _showError(error['error'] ?? 'Failed to create book');
+      }
+    } catch (e) {
+      print('Error caught: $e');
+      _showError('Error: ${e.toString()}');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
-}
 
   void _clearForm() {
     _isbnController.clear();
@@ -176,19 +177,13 @@ class _AddBookScreenState extends State<AddBookScreen> {
       _errorMessage = message;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.destructive,
-      ),
+      SnackBar(content: Text(message), backgroundColor: AppColors.destructive),
     );
   }
 
   void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.primary,
-      ),
+      SnackBar(content: Text(message), backgroundColor: AppColors.primary),
     );
   }
 
@@ -221,7 +216,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
           padding: const EdgeInsets.all(AppSpacing.containerPadding),
           child: Center(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: AppSpacing.cardMaxWidth),
+              constraints: const BoxConstraints(
+                maxWidth: AppSpacing.cardMaxWidth,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -229,7 +226,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
                   children: [
                     // ISBN Search Card
                     Container(
-                      padding: const EdgeInsets.all(AppSpacing.containerPadding),
+                      padding: const EdgeInsets.all(
+                        AppSpacing.containerPadding,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.card,
                         borderRadius: BorderRadius.circular(AppRadius.card),
@@ -262,8 +261,12 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                     labelText: 'ISBN',
                                     hintText: 'e.g., 9780140328721',
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(AppRadius.input),
-                                      borderSide: BorderSide(color: AppColors.border),
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.input,
+                                      ),
+                                      borderSide: BorderSide(
+                                        color: AppColors.border,
+                                      ),
                                     ),
                                     filled: true,
                                     fillColor: AppColors.input,
@@ -280,14 +283,21 @@ class _AddBookScreenState extends State<AddBookScreen> {
                               SizedBox(
                                 height: AppSpacing.inputHeight,
                                 child: ElevatedButton(
-                                  onPressed: _isSearching ? null : _searchByISBN,
+                                  onPressed: _isSearching
+                                      ? null
+                                      : _searchByISBN,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primary,
-                                    foregroundColor: AppColors.primaryForeground,
+                                    foregroundColor:
+                                        AppColors.primaryForeground,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(AppRadius.button),
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.button,
+                                      ),
                                     ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                    ),
                                   ),
                                   child: _isSearching
                                       ? const SizedBox(
@@ -295,7 +305,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                           height: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
                                           ),
                                         )
                                       : const Icon(Icons.search),
@@ -311,7 +324,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
                     // Book Details Card
                     Container(
-                      padding: const EdgeInsets.all(AppSpacing.containerPadding),
+                      padding: const EdgeInsets.all(
+                        AppSpacing.containerPadding,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.card,
                         borderRadius: BorderRadius.circular(AppRadius.card),
@@ -334,7 +349,8 @@ class _AddBookScreenState extends State<AddBookScreen> {
                             controller: _titleController,
                             label: 'Title',
                             hint: 'Enter book title',
-                            validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                            validator: (value) =>
+                                value?.isEmpty ?? true ? 'Required' : null,
                           ),
 
                           const SizedBox(height: AppSpacing.fieldSpacing * 2),
@@ -344,7 +360,8 @@ class _AddBookScreenState extends State<AddBookScreen> {
                             controller: _authorController,
                             label: 'Author',
                             hint: 'Enter author name',
-                            validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                            validator: (value) =>
+                                value?.isEmpty ?? true ? 'Required' : null,
                           ),
 
                           const SizedBox(height: AppSpacing.fieldSpacing * 2),
@@ -366,12 +383,19 @@ class _AddBookScreenState extends State<AddBookScreen> {
                               decoration: InputDecoration(
                                 labelText: 'Publication Date',
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppRadius.input),
-                                  borderSide: BorderSide(color: AppColors.border),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.input,
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: AppColors.border,
+                                  ),
                                 ),
                                 filled: true,
                                 fillColor: AppColors.input,
-                                suffixIcon: Icon(Icons.calendar_today, color: AppColors.primary),
+                                suffixIcon: Icon(
+                                  Icons.calendar_today,
+                                  color: AppColors.primary,
+                                ),
                               ),
                               child: Text(
                                 '${_publicationDate.year}-${_publicationDate.month.toString().padLeft(2, '0')}-${_publicationDate.day.toString().padLeft(2, '0')}',
@@ -423,8 +447,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                   label: 'Total Copies',
                                   keyboardType: TextInputType.number,
                                   validator: (value) {
-                                    if (value?.isEmpty ?? true) return 'Required';
-                                    if (int.tryParse(value!) == null) return 'Must be a number';
+                                    if (value?.isEmpty ?? true)
+                                      return 'Required';
+                                    if (int.tryParse(value!) == null)
+                                      return 'Must be a number';
                                     return null;
                                   },
                                 ),
@@ -436,8 +462,10 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                   label: 'Available Copies',
                                   keyboardType: TextInputType.number,
                                   validator: (value) {
-                                    if (value?.isEmpty ?? true) return 'Required';
-                                    if (int.tryParse(value!) == null) return 'Must be a number';
+                                    if (value?.isEmpty ?? true)
+                                      return 'Required';
+                                    if (int.tryParse(value!) == null)
+                                      return 'Must be a number';
                                     return null;
                                   },
                                 ),
@@ -457,11 +485,16 @@ class _AddBookScreenState extends State<AddBookScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.destructive.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(AppRadius.card),
-                          border: Border.all(color: AppColors.destructive.withOpacity(0.3)),
+                          border: Border.all(
+                            color: AppColors.destructive.withOpacity(0.3),
+                          ),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline, color: AppColors.destructive),
+                            Icon(
+                              Icons.error_outline,
+                              color: AppColors.destructive,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
@@ -484,10 +517,15 @@ class _AddBookScreenState extends State<AddBookScreen> {
                           child: OutlinedButton(
                             onPressed: _isLoading ? null : _clearForm,
                             style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
+                              minimumSize: const Size(
+                                double.infinity,
+                                AppSpacing.buttonHeight,
+                              ),
                               side: BorderSide(color: AppColors.border),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppRadius.button),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.button,
+                                ),
                               ),
                             ),
                             child: Text(
@@ -506,9 +544,14 @@ class _AddBookScreenState extends State<AddBookScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               foregroundColor: AppColors.primaryForeground,
-                              minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
+                              minimumSize: const Size(
+                                double.infinity,
+                                AppSpacing.buttonHeight,
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppRadius.button),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.button,
+                                ),
                               ),
                             ),
                             child: _isLoading
@@ -517,7 +560,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
                                     ),
                                   )
                                 : Text(
