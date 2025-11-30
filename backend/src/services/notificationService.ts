@@ -1,5 +1,5 @@
-import { supabase } from '../config/supabaseClient';
-import { Notification } from '../models/notification';
+import { supabase } from '../config/supabaseClient.js';
+import { Notification } from '../models/notification.js';
 
 export class NotificationService {
 
