@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/catalog_page.dart';
 import 'package:frontend/screens/id_entry_screen.dart';
-import 'package:frontend/screens/add_book_screen.dart'; // NEW IMPORT
+import 'package:frontend/screens/add_book_screen.dart';
 import 'package:frontend/theme/app_colors.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/theme/theme_controller.dart';
@@ -123,12 +123,19 @@ class _MyAppHomeState extends State<MyAppHome> {
   @override
   void initState() {
     super.initState();
+    _initializePages();
+  }
+
+  void _initializePages() {
     final isStudent = widget.userRole.toLowerCase() == 'student';
 
     if (isStudent) {
+      // For students, pass empty string - MyBorrowingsScreen will fetch the actual ID from profile
+      print('Initializing pages for student');
+
       _pages = [
         CatalogPage(userRole: widget.userRole, onLogout: widget.onLogout),
-        MyBorrowingsScreen(studentId: Supabase.instance.client.auth.currentUser!.id),
+        const MyBorrowingsScreen(studentId: ''), // Will fetch from profile API
         const FavoritesScreen(),
         ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
       ];
@@ -185,6 +192,9 @@ class _MyAppHomeState extends State<MyAppHome> {
           const AddBookScreen(),
           ProfileScreen(userRole: widget.userRole, onLogout: widget.onLogout),
         ];
+      } else {
+        // Re-initialize pages for students too to maintain state
+        _initializePages();
       }
       // ensure selectedIndex remains valid after changing pages
       _selectedIndex = _safeIndex(_selectedIndex);

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _baseUrl = 'http://127.0.0.1:5001/auth';
-const String _userBaseUrl = 'http://127.0.0.1:5001/users';
+const String _baseUrl = 'https://chapter-djfj.onrender.com/auth';
+const String _userBaseUrl = 'https://chapter-djfj.onrender.com/users';
 
 class AuthService {
   static const String _tokenKey = 'jwtToken';
