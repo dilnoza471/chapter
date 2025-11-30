@@ -112,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     
     final firstNameController = TextEditingController(text: _userProfile!.firstName);
     final lastNameController = TextEditingController(text: _userProfile!.lastName);
-    final studentIdController = TextEditingController(text: _userProfile!.studentId); 
+    final studentIdController = TextEditingController(text: _userProfile!.studentId.toString()); 
 
     final isStudent = widget.userRole == 'student';
 
@@ -648,7 +648,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 _buildInfoCard(
                                   icon: Icons.badge,
                                   label: 'Student ID',
-                                  value: _userProfile!.studentId!,
+                                  value: _userProfile!.studentId.toString(),
                                 ),
                             ],
                           ),

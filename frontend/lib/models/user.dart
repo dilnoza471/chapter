@@ -4,7 +4,7 @@ class User {
   final String lastName;
   final String email;
   final String role;
-  final String? studentId;
+  final int? studentId;
   final DateTime? createdAt;
 
   String get fullName => '$firstName $lastName';
@@ -27,7 +27,7 @@ class User {
       lastName: json['lastname'] as String? ?? json['lastName'] as String? ?? '',
       email: json['email'] as String,
       role: json['role'] as String,
-      studentId: json['student_id'] as String?,
+      studentId: json['student_id'] as int?,
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at'] as String)
           : null,
